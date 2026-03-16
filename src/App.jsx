@@ -63,7 +63,7 @@ export default function App() {
     }
   }, [user])
 
-  const { buildings, totalHours, totalSessions, newBuildingId, fires, completeSession, failSession, repairByPay, nextLandmark } = useCity(user)
+  const { buildings, totalHours, totalSessions, newBuildingId, fires, denarii, completeSession, failSession, repairByPay, purchaseBuilding, nextLandmark } = useCity(user)
 
   const onSessionComplete = useCallback((durationMinutes) => {
     const newHours = totalHours + durationMinutes / 60
@@ -251,6 +251,8 @@ export default function App() {
                   reset={timer.reset}
                   setDuration={timer.setDuration}
                   onGiveUp={handleGiveUp}
+                  denarii={denarii}
+                  onPurchase={purchaseBuilding}
                 />
               </div>
             </div>

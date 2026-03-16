@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import BuildingShop from './BuildingShop.jsx'
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0')
@@ -8,9 +9,19 @@ function formatTime(seconds) {
 
 const PRESETS = [25, 50]
 
-export default function Timer({ timeLeft, isRunning, progress, durationMinutes, start, pause, reset, setDuration, onGiveUp }) {
+export default function Timer({ timeLeft, isRunning, progress, durationMinutes, start, pause, reset, setDuration, onGiveUp, denarii, onPurchase }) {
   const [customInput, setCustomInput] = useState('')
   const [showCustom, setShowCustom] = useState(false)
+  const [showShop, setShowShop] = useState(false)
+  const shopRef = useRef(null)
+
+  // Close shop on outside tap
+  useEffect(() => {
+    if (!showShop) return
+    function handle(e) { if (shopRef.current && !shopRef.current.contains(e.target)) setShowShop(false) }
+    document.addEventListener('pointerdown', handle)
+    return () => document.removeEventListener('pointerdown', handle)
+  }, [showShop])
 
   const circumference = 2 * Math.PI * 44
   const dashOffset = circumference * (1 - progress)
@@ -25,7 +36,7 @@ export default function Timer({ timeLeft, isRunning, progress, durationMinutes, 
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 relative">
       {/* Circular timer — compact */}
       <div className="relative flex-shrink-0 flex items-center justify-center">
         <svg width="100" height="100" className="-rotate-90">
@@ -50,6 +61,17 @@ export default function Timer({ timeLeft, isRunning, progress, durationMinutes, 
           </span>
         </div>
       </div>
+
+      {/* Shop popup — anchored above the timer row */}
+      {showShop && (
+        <div ref={shopRef} className="absolute bottom-full left-0 right-0 z-30" style={{ marginBottom: '8px' }}>
+          <BuildingShop
+            denarii={denarii}
+            onPurchase={(b) => { onPurchase(b); setShowShop(false) }}
+            onClose={() => setShowShop(false)}
+          />
+        </div>
+      )}
 
       {/* Right side: presets + controls */}
       <div className="flex flex-col gap-2.5 flex-1 min-w-0">
@@ -115,6 +137,20 @@ export default function Timer({ timeLeft, isRunning, progress, durationMinutes, 
           >
             Reset
           </button>
+          {/* Hammer — open building shop */}
+          <button
+            onClick={() => setShowShop(v => !v)}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center text-base transition-all active:scale-95 ${
+              showShop
+                ? 'bg-[#c05828] text-white shadow-md'
+                : 'bg-[#e8d4a8]/60 text-[#7a4a28]'
+            }`}
+            title="Build"
+          >
+            🔨
+          </button>
+          {/* Denarii balance */}
+          <span className="text-xs font-bold text-amber-700 ml-1">ᴅ {denarii}</span>
           {isRunning && (
             <button
               onClick={onGiveUp}
