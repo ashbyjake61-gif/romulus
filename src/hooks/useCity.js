@@ -65,34 +65,61 @@ export function useCity(user) {
 
   useEffect(() => {
     const layout = buildCityLayout(cityState.totalSessions, totalHours)
-    // Merge purchased buildings in, finding free spots using layout's grid
+
+    // Build occupation grid from auto-placed buildings
     const grid = Array.from({ length: 20 }, () => Array(20).fill(false))
     for (const b of layout) {
       for (let r = b.row; r < b.row + b.h; r++)
         for (let c = b.col; c < b.col + b.w; c++)
           if (grid[r]) grid[r][c] = true
     }
+
     const allBuildings = [...layout]
-    for (const pb of purchasedBuildings) {
-      // Use stored position if valid, else find a new one
+    // Track which purchased buildings needed their position assigned
+    let positionsUpdated = false
+    const updatedPurchased = purchasedBuildings.map(pb => {
+      // Already has a saved position — use it
       if (pb.col !== undefined && pb.row !== undefined) {
-        allBuildings.push({ ...pb, isLandmark: false, unlocked: true })
         for (let r = pb.row; r < pb.row + pb.h; r++)
           for (let c = pb.col; c < pb.col + pb.w; c++)
             if (grid[r]) grid[r][c] = true
-      } else {
-        const spot = findFreeSpot(grid, pb.w, pb.h)
-        if (spot) {
-          const placed = { ...pb, ...spot, isLandmark: false, unlocked: true }
-          allBuildings.push(placed)
-          for (let r = spot.row; r < spot.row + pb.h; r++)
-            for (let c = spot.col; c < spot.col + pb.w; c++)
-              if (grid[r]) grid[r][c] = true
-        }
+        allBuildings.push({ ...pb, isLandmark: false, unlocked: true })
+        return pb
       }
+      // No position yet — find one and save it permanently
+      const spot = findFreeSpot(grid, pb.w, pb.h)
+      if (spot) {
+        for (let r = spot.row; r < spot.row + pb.h; r++)
+          for (let c = spot.col; c < spot.col + pb.w; c++)
+            if (grid[r]) grid[r][c] = true
+        const placed = { ...pb, col: spot.col, row: spot.row }
+        allBuildings.push({ ...placed, isLandmark: false, unlocked: true })
+        positionsUpdated = true
+        return placed
+      }
+      return pb
+    })
+
+    // If any positions were newly assigned, persist them
+    if (positionsUpdated) {
+      savePurchased(updatedPurchased)
+      setPurchasedBuildings(updatedPurchased)
     }
+
     setBuildings(allBuildings)
   }, [cityState.totalSessions, totalHours, purchasedBuildings])
+
+  const persistToSupabase = useCallback(async (state, userId, purchased) => {
+    if (!userId) return
+    await supabase.from('city_saves').upsert({
+      user_id: userId,
+      total_sessions: state.totalSessions,
+      total_minutes: state.totalMinutes,
+      spent_denarii: state.spentDenarii || 0,
+      purchased_buildings: purchased ?? [],
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' })
+  }, [])
 
   // Load from Supabase when user logs in
   useEffect(() => {
@@ -113,26 +140,20 @@ export function useCity(user) {
           }
           setCityState(state)
           saveLocal(state)
+          // Restore purchased buildings from Supabase — source of truth
+          if (Array.isArray(data.purchased_buildings)) {
+            setPurchasedBuildings(data.purchased_buildings)
+            savePurchased(data.purchased_buildings)
+          }
         }
       })
   }, [user])
-
-  const persistToSupabase = useCallback(async (state, userId) => {
-    if (!userId) return
-    await supabase.from('city_saves').upsert({
-      user_id: userId,
-      total_sessions: state.totalSessions,
-      total_minutes: state.totalMinutes,
-      spent_denarii: state.spentDenarii || 0,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'user_id' })
-  }, [])
 
   const completeSession = useCallback((durationMinutes) => {
     setCityState(prev => {
       const next = { ...prev, totalSessions: prev.totalSessions + 1, totalMinutes: prev.totalMinutes + durationMinutes }
       saveLocal(next)
-      if (user) persistToSupabase(next, user.id)
+      if (user) persistToSupabase(next, user.id, purchasedBuildings)
       return next
     })
     if (durationMinutes >= 25) {
@@ -140,29 +161,38 @@ export function useCity(user) {
     }
     setNewBuildingId(`session_${Date.now()}`)
     setTimeout(() => setNewBuildingId(null), 3000)
-  }, [user, persistToSupabase])
+  }, [user, persistToSupabase, purchasedBuildings])
 
   const purchaseBuilding = useCallback((shopBuilding) => {
     const cost = shopBuilding.cost
+    let didPurchase = false
+
     setCityState(prev => {
       const available = Math.max(0, prev.totalMinutes - (prev.spentDenarii || 0))
       if (available < cost) return prev
+      didPurchase = true
       const next = { ...prev, spentDenarii: (prev.spentDenarii || 0) + cost }
       saveLocal(next)
-      if (user) persistToSupabase(next, user.id)
       return next
     })
-    const newBuilding = {
-      ...shopBuilding,
-      id: shopBuilding.id,
-      seed: `purchased_${Date.now()}`,
-    }
+
+    // We can't read didPurchase synchronously due to React batching,
+    // so re-check affordability here directly
+    const available = Math.max(0, cityState.totalMinutes - (cityState.spentDenarii || 0))
+    if (available < cost) return
+
+    const newBuilding = { ...shopBuilding, seed: `purchased_${Date.now()}` }
     setPurchasedBuildings(prev => {
       const next = [...prev, newBuilding]
       savePurchased(next)
+      // Persist state + purchased to Supabase together
+      setCityState(state => {
+        if (user) persistToSupabase(state, user.id, next)
+        return state
+      })
       return next
     })
-  }, [user, persistToSupabase])
+  }, [user, persistToSupabase, cityState.totalMinutes, cityState.spentDenarii])
 
   const failSession = useCallback((currentBuildings) => {
     const candidates = currentBuildings.filter(b => !b.isLandmark && !fires.some(f => f.col === b.col && f.row === b.row))
@@ -177,11 +207,11 @@ export function useCity(user) {
     setCityState(prev => {
       const next = { ...prev, totalMinutes: Math.max(0, prev.totalMinutes - 10) }
       saveLocal(next)
-      if (user) persistToSupabase(next, user.id)
+      if (user) persistToSupabase(next, user.id, purchasedBuildings)
       return next
     })
     setFires(prev => { const next = prev.filter(f => f.id !== fireId); saveFires(next); return next })
-  }, [user, persistToSupabase])
+  }, [user, persistToSupabase, purchasedBuildings])
 
   const nextLandmark = LANDMARKS.find(lm => totalHours < lm.hoursRequired) || null
 
