@@ -6,8 +6,29 @@ import { CITY_COLS, CITY_ROWS } from './cityEngine.js'
 const TILE_W = 64   // isometric tile width (full diamond)
 const TILE_H = 32   // isometric tile height (half diamond)
 const FLOOR_H = 14  // height per building floor in pixels
-const GROUND_COLOR = '#d4b896'
-const ROAD_COLOR = '#c4a07e'
+const GROUND_COLOR = '#6a9e4a'       // grass green
+const GROUND_ALT   = '#5e9040'       // darker grass variation
+const ROAD_COLOR   = '#8b7355'       // dirt path
+
+// Sprite cache — loaded once, reused every frame
+const spriteCache = {}
+
+function getSprite(id) {
+  if (spriteCache[id] === undefined) {
+    spriteCache[id] = null // mark as loading
+    const img = new Image()
+    img.onload = () => { spriteCache[id] = img }
+    img.onerror = () => { spriteCache[id] = false } // false = no sprite, use procedural
+    img.src = `/buildings/${id}.png`
+  }
+  return spriteCache[id] // null = still loading, false = not found, Image = ready
+}
+
+// Seeded noise for deterministic flora placement
+function tileNoise(c, r) {
+  const n = Math.sin(c * 127.1 + r * 311.7) * 43758.5453
+  return n - Math.floor(n)
+}
 
 // Convert grid (col, row) to screen (x, y) — isometric projection
 export function gridToScreen(col, row, offsetX, offsetY) {
@@ -72,7 +93,19 @@ function drawBuilding(ctx, building, offsetX, offsetY, isNew = false) {
     return
   }
 
-  // Base ground tiles
+  // Sprite override — if a PNG exists for this building type, use it
+  const sprite = getSprite(id)
+  if (sprite) {
+    // Sprite is drawn anchored to the front-bottom corner of the building footprint
+    // Scale: each grid tile = TILE_W wide. Sprite should be exported at 128px per tile.
+    const spriteScale = (w + h) * TILE_W / 2 / 128
+    const sw = sprite.width * spriteScale
+    const sh = sprite.height * spriteScale
+    ctx.drawImage(sprite, fx - sw / 2, fy - sh + TILE_H / 2, sw, sh)
+    return
+  }
+
+  // Base ground tiles (procedural fallback)
   for (let r = row; r < row + h; r++) {
     for (let c = col; c < col + w; c++) {
       const { x, y } = gridToScreen(c, r, offsetX, offsetY)
@@ -357,6 +390,55 @@ function darken(hex, amount) {
   return rgbToHex(r * (1 - amount), g * (1 - amount), b * (1 - amount))
 }
 
+function drawFlower(ctx, x, y, seed) {
+  const colors = ['#f7d0e8', '#ffe066', '#ff9ec4', '#ffffff', '#b8e0ff']
+  const petalColor = colors[Math.floor(seed * colors.length * 7) % colors.length]
+  const petalCount = 5
+  const r = 2.5
+
+  // Stem
+  ctx.strokeStyle = '#4a7a28'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(x, y)
+  ctx.lineTo(x, y - 7)
+  ctx.stroke()
+
+  // Petals
+  for (let i = 0; i < petalCount; i++) {
+    const angle = (i / petalCount) * Math.PI * 2
+    ctx.beginPath()
+    ctx.arc(x + Math.cos(angle) * r * 1.4, y - 7 + Math.sin(angle) * r, r, 0, Math.PI * 2)
+    ctx.fillStyle = petalColor
+    ctx.fill()
+  }
+  // Centre
+  ctx.beginPath()
+  ctx.arc(x, y - 7, r * 0.7, 0, Math.PI * 2)
+  ctx.fillStyle = '#f0c040'
+  ctx.fill()
+}
+
+function drawWeed(ctx, x, y, seed) {
+  const bladeCount = 3 + Math.floor(seed * 3)
+  for (let i = 0; i < bladeCount; i++) {
+    const angle = -Math.PI / 2 + (i - bladeCount / 2) * 0.45 + (seed - 0.5) * 0.3
+    const len = 6 + seed * 5
+    const lean = Math.sin(seed * 10 + i) * 2
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.quadraticCurveTo(
+      x + Math.cos(angle) * len * 0.5 + lean,
+      y + Math.sin(angle) * len * 0.5,
+      x + Math.cos(angle) * len + lean * 1.5,
+      y + Math.sin(angle) * len
+    )
+    ctx.strokeStyle = i % 2 === 0 ? '#4a8a30' : '#5a9e38'
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+  }
+}
+
 // Draw a subtle road grid
 function drawRoads(ctx, buildings, offsetX, offsetY) {
   if (buildings.length < 2) return
@@ -474,10 +556,10 @@ export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0
   // Clear
   ctx.clearRect(0, 0, W, H)
 
-  // Sky gradient background
+  // Sky gradient — soft blue-grey
   const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.6)
-  skyGrad.addColorStop(0, '#e8d0b0')
-  skyGrad.addColorStop(1, '#f0dfc0')
+  skyGrad.addColorStop(0, '#c8dff0')
+  skyGrad.addColorStop(1, '#ddeedd')
   ctx.fillStyle = skyGrad
   ctx.fillRect(0, 0, W, H)
 
@@ -489,13 +571,45 @@ export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0
   const offsetX = W / (2 * zoom)
   const offsetY = H / (2 * zoom) - (CITY_ROWS * TILE_H) / 4
 
+  // Build a set of occupied cells for flora culling
+  const occupiedCells = new Set()
+  for (const b of buildings) {
+    for (let r = b.row; r < b.row + b.h; r++) {
+      for (let c = b.col; c < b.col + b.w; c++) {
+        occupiedCells.add(`${c},${r}`)
+      }
+    }
+  }
+
   // Draw ground tiles
   for (let r = 0; r < CITY_ROWS; r++) {
     for (let c = 0; c < CITY_COLS; c++) {
       const { x, y } = gridToScreen(c, r, offsetX, offsetY)
-      // Checkerboard subtle variation
-      const shade = (c + r) % 2 === 0 ? GROUND_COLOR : '#cca87a'
+      const noise = tileNoise(c, r)
+      // Subtle grass variation — 3 shades
+      const shade = noise < 0.33 ? GROUND_COLOR : noise < 0.66 ? GROUND_ALT : '#74a852'
       drawTile(ctx, x, y + TILE_H / 2, shade, true)
+    }
+  }
+
+  // Draw flora on unoccupied tiles
+  for (let r = 0; r < CITY_ROWS; r++) {
+    for (let c = 0; c < CITY_COLS; c++) {
+      if (occupiedCells.has(`${c},${r}`)) continue
+      const noise = tileNoise(c + 100, r + 100)
+      if (noise < 0.06) {
+        // Flower
+        const { x, y } = gridToScreen(c, r, offsetX, offsetY)
+        const cx = x + (tileNoise(c, r + 50) - 0.5) * 20
+        const cy = y + TILE_H / 2 + (tileNoise(c + 50, r) - 0.5) * 8
+        drawFlower(ctx, cx, cy, noise)
+      } else if (noise < 0.14) {
+        // Weed / grass tuft
+        const { x, y } = gridToScreen(c, r, offsetX, offsetY)
+        const cx = x + (tileNoise(c, r + 77) - 0.5) * 24
+        const cy = y + TILE_H / 2 + (tileNoise(c + 77, r) - 0.5) * 10
+        drawWeed(ctx, cx, cy, noise)
+      }
     }
   }
 
