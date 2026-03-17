@@ -11,17 +11,30 @@ const GROUND_ALT   = '#5e9040'       // darker grass variation
 const ROAD_COLOR   = '#8b7355'       // dirt path
 
 // Sprite cache — loaded once, reused every frame
+// SVG convention: viewBox 0 0 680 560, front-bottom anchor at (340, 460),
+// iso base diamond spans x=140→540 (400px wide).
 const spriteCache = {}
+const SVG_VIEWBOX_W = 680
+const SVG_VIEWBOX_H = 560
+const SVG_DIAMOND_W = 400   // x:140→540
+const SVG_ANCHOR_X  = 340   // front-bottom x in viewBox
+const SVG_ANCHOR_Y  = 460   // front-bottom y in viewBox
 
 function getSprite(id) {
   if (spriteCache[id] === undefined) {
-    spriteCache[id] = null // mark as loading
+    spriteCache[id] = null
+    // Try SVG first, fall back to PNG
     const img = new Image()
     img.onload = () => { spriteCache[id] = img }
-    img.onerror = () => { spriteCache[id] = false } // false = no sprite, use procedural
-    img.src = `/buildings/${id}.png`
+    img.onerror = () => {
+      const png = new Image()
+      png.onload = () => { spriteCache[id] = png }
+      png.onerror = () => { spriteCache[id] = false }
+      png.src = `/buildings/${id}.png`
+    }
+    img.src = `/buildings/${id}.svg`
   }
-  return spriteCache[id] // null = still loading, false = not found, Image = ready
+  return spriteCache[id]
 }
 
 // Seeded noise for deterministic flora placement
@@ -93,15 +106,21 @@ function drawBuilding(ctx, building, offsetX, offsetY, isNew = false) {
     return
   }
 
-  // Sprite override — if a PNG exists for this building type, use it
+  // Sprite override — use SVG/PNG if present in /public/buildings/
   const sprite = getSprite(id)
   if (sprite) {
-    // Sprite is drawn anchored to the front-bottom corner of the building footprint
-    // Scale: each grid tile = TILE_W wide. Sprite should be exported at 128px per tile.
-    const spriteScale = (w + h) * TILE_W / 2 / 128
-    const sw = sprite.width * spriteScale
-    const sh = sprite.height * spriteScale
-    ctx.drawImage(sprite, fx - sw / 2, fy - sh + TILE_H / 2, sw, sh)
+    // Scale so the iso diamond base matches the tile footprint on screen.
+    // SVG convention: diamond base = SVG_DIAMOND_W px wide in a SVG_VIEWBOX_W × SVG_VIEWBOX_H viewBox.
+    // Target width on screen = (w + h) * TILE_W / 2
+    const targetDiamondW = (w + h) * (TILE_W / 2)
+    const scale = targetDiamondW / SVG_DIAMOND_W
+    const sw = SVG_VIEWBOX_W * scale
+    const sh = SVG_VIEWBOX_H * scale
+    // Anchor: front-bottom of building in SVG at (SVG_ANCHOR_X, SVG_ANCHOR_Y)
+    // This should align with the front ground point: (fx, fy + TILE_H)
+    const anchorX = SVG_ANCHOR_X * scale
+    const anchorY = SVG_ANCHOR_Y * scale
+    ctx.drawImage(sprite, fx - anchorX, fy + TILE_H - anchorY, sw, sh)
     return
   }
 

@@ -1,0 +1,36 @@
+<svg width="680" height="560" viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- LEFT WALL -->
+  <polygon points="140,360 340,460 340,240 140,140" fill="#E8920A" style="fill:rgb(232, 146, 10);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- RIGHT WALL -->
+  <polygon points="340,460 540,360 540,140 340,240" fill="#C97800" style="fill:rgb(201, 120, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- DOOR on right wall
+    Right wall base runs from (340,460) to (540,360).
+    Place door centre at t=0.45 along that edge.
+    Door bottom-left:  (340 + 0.35*200, 460 - 0.35*100) = (410, 425)
+    Door bottom-right: (340 + 0.55*200, 460 - 0.55*100) = (450, 405)
+    Door height: 90px straight up
+    Door top-left:  (410, 335)
+    Door top-right: (450, 315)
+  -->
+  <polygon points="410,425 450,405 450,315 410,335" fill="#3A1A08" style="fill:rgb(58, 26, 8);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Door frame -->
+  <polygon points="410,425 450,405 450,315 410,335" fill="none" stroke="#1A0A00" stroke-width="1.5" style="fill:none;stroke:rgb(26, 10, 0);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- PYRAMID ROOF -->
+  <polygon points="340,240 140,140 340,50" fill="#C03010" style="fill:rgb(192, 48, 16);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <polygon points="340,240 540,140 340,50" fill="#901800" style="fill:rgb(144, 24, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <polygon points="140,140 340,40 340,50" fill="#A82000" style="fill:rgb(168, 32, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <polygon points="540,140 340,40 340,50" fill="#701000" style="fill:rgb(112, 16, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- OUTLINES -->
+  <polygon points="340,50 140,140 140,360 340,460 540,360 540,140 340,50" fill="none" stroke="#1A0A00" stroke-width="1.5" stroke-linejoin="miter" style="fill:none;stroke:rgb(26, 10, 0);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="340" y1="240" x2="340" y2="460" stroke="#1A0A00" stroke-width="1.5" style="fill:rgb(0, 0, 0);stroke:rgb(26, 10, 0);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="140" y1="140" x2="340" y2="240" stroke="#1A0A00" stroke-width="1.5" style="fill:rgb(0, 0, 0);stroke:rgb(26, 10, 0);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="340" y1="240" x2="540" y2="140" stroke="#1A0A00" stroke-width="1.5" style="fill:rgb(0, 0, 0);stroke:rgb(26, 10, 0);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="340" y1="40" x2="140" y2="140" stroke="#1A0A00" stroke-width="1.5" style="fill:rgb(0, 0, 0);stroke:rgb(26, 10, 0);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="340" y1="40" x2="540" y2="140" stroke="#1A0A00" stroke-width="1.5" style="fill:rgb(0, 0, 0);stroke:rgb(26, 10, 0);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+</svg>
