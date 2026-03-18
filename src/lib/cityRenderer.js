@@ -126,11 +126,10 @@ function drawBuilding(ctx, building, offsetX, offsetY, isNew = false) {
     const scale = targetDiamondW / SVG_DIAMOND_W
     const sw = SVG_VIEWBOX_W * scale
     const sh = SVG_VIEWBOX_H * scale
-    // Anchor: front-bottom of building in SVG at (SVG_ANCHOR_X, SVG_ANCHOR_Y)
-    // This should align with the front ground point: (fx, fy + TILE_H)
+    // Anchor: SVG front-bottom (340,460) must align with (fx, baseY = fy - bd)
     const anchorX = SVG_ANCHOR_X * scale
     const anchorY = SVG_ANCHOR_Y * scale
-    ctx.drawImage(sprite, fx - anchorX, fy + TILE_H - anchorY, sw, sh)
+    ctx.drawImage(sprite, fx - anchorX, fy - bd - anchorY, sw, sh)
     return
   }
 
