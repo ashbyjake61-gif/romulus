@@ -20,19 +20,29 @@ const SVG_DIAMOND_W = 400   // x:140→540
 const SVG_ANCHOR_X  = 340   // front-bottom x in viewBox
 const SVG_ANCHOR_Y  = 460   // front-bottom y in viewBox
 
+function loadImageFromUrl(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = url
+  })
+}
+
 function getSprite(id) {
   if (spriteCache[id] === undefined) {
     spriteCache[id] = null
-    // Try SVG first, fall back to PNG
-    const img = new Image()
-    img.onload = () => { spriteCache[id] = img }
-    img.onerror = () => {
-      const png = new Image()
-      png.onload = () => { spriteCache[id] = png }
-      png.onerror = () => { spriteCache[id] = false }
-      png.src = `/buildings/${id}.png`
-    }
-    img.src = `/buildings/${id}.svg`
+    // Fetch SVG as blob URL (avoids browser canvas tainting quirks)
+    fetch(`/buildings/${id}.svg`)
+      .then(r => { if (!r.ok) throw new Error('no svg'); return r.blob() })
+      .then(blob => loadImageFromUrl(URL.createObjectURL(blob)))
+      .then(img => { spriteCache[id] = img })
+      .catch(() => {
+        // Fall back to PNG
+        loadImageFromUrl(`/buildings/${id}.png`)
+          .then(img => { spriteCache[id] = img })
+          .catch(() => { spriteCache[id] = false })
+      })
   }
   return spriteCache[id]
 }
