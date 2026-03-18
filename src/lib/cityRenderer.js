@@ -3,6 +3,10 @@
 
 import { CITY_COLS, CITY_ROWS } from './cityEngine.js'
 
+// Exported layout constants (needed by CityCanvas for coordinate conversion)
+export const EXPORTED_TILE_W = 64
+export const EXPORTED_TILE_H = 32
+
 const TILE_W = 64   // isometric tile width (full diamond)
 const TILE_H = 32   // isometric tile height (half diamond)
 const FLOOR_H = 14  // height per building floor in pixels
@@ -58,6 +62,43 @@ export function gridToScreen(col, row, offsetX, offsetY) {
   const x = (col - row) * (TILE_W / 2) + offsetX
   const y = (col + row) * (TILE_H / 2) + offsetY
   return { x, y }
+}
+
+// Inverse: screen (sx, sy) → fractional grid (col, row)
+export function screenToGrid(sx, sy, offsetX, offsetY) {
+  const dx = (sx - offsetX) / (TILE_W / 2)
+  const dy = (sy - offsetY) / (TILE_H / 2)
+  return { col: (dx + dy) / 2, row: (dy - dx) / 2 }
+}
+
+// Compute the same view offsets used inside renderCity
+export function getViewOffsets(canvasWidth, canvasHeight, zoom) {
+  return {
+    offsetX: canvasWidth / (2 * zoom),
+    offsetY: canvasHeight / (2 * zoom) - (CITY_ROWS * TILE_H) / 4,
+  }
+}
+
+// Find the topmost building at the given screen coords (lx, ly after pan/zoom removed)
+// Uses screen-space bounding box so clicks on roofs/walls register correctly
+export function hitTestBuildings(buildings, lx, ly, offsetX, offsetY) {
+  // Reverse painter order — visually topmost (highest col+row) wins
+  const sorted = [...buildings].sort((a, b) => (b.col + b.row) - (a.col + a.row))
+  for (const b of sorted) {
+    const { x: fx, y: fy } = gridToScreen(b.col + b.w, b.row + b.h, offsetX, offsetY)
+    const bd = b.h * (TILE_H / 2)
+    const baseY = fy - bd
+    const totalH = (b.floors || 1) * FLOOR_H
+    // Screen bounding box of the building
+    const left  = fx - (b.w + b.h) * (TILE_W / 2)
+    const right  = fx
+    const top    = baseY - totalH - 10  // small buffer for roof decorations
+    const bottom = fy
+    if (lx >= left && lx <= right && ly >= top && ly <= bottom) {
+      return b
+    }
+  }
+  return null
 }
 
 // Draw a single isometric tile (ground)
@@ -576,7 +617,8 @@ function drawFire(ctx, col, row, w, h, time) {
 }
 
 // Main render function
-export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0, y: 0 }, zoom = 1, fires = []) {
+// dragState: { building, ghostCol, ghostRow, isFree } | null
+export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0, y: 0 }, zoom = 1, fires = [], dragState = null) {
   const ctx = canvas.getContext('2d')
   const W = canvas.width
   const H = canvas.height
@@ -620,6 +662,19 @@ export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0
     }
   }
 
+  // Ghost footprint tiles — show where a dragged building would land
+  if (dragState) {
+    const { ghostCol: gc, ghostRow: gr, building: db, isFree } = dragState
+    const tint = isFree ? 'rgba(80,210,80,0.45)' : 'rgba(220,60,60,0.45)'
+    for (let r = gr; r < gr + db.h; r++) {
+      for (let c = gc; c < gc + db.w; c++) {
+        if (c < 0 || r < 0 || c >= CITY_COLS || r >= CITY_ROWS) continue
+        const { x, y } = gridToScreen(c, r, offsetX, offsetY)
+        drawTile(ctx, x, y + TILE_H / 2, tint)
+      }
+    }
+  }
+
   // Draw flora on unoccupied tiles
   for (let r = 0; r < CITY_ROWS; r++) {
     for (let c = 0; c < CITY_COLS; c++) {
@@ -646,8 +701,10 @@ export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0
     drawRoads(ctx, buildings, offsetX, offsetY)
   }
 
-  // Sort buildings by painter's algorithm (col + row ascending)
-  const sorted = [...buildings].sort((a, b) => (a.col + a.row) - (b.col + b.row))
+  // Sort buildings by painter's algorithm (col + row ascending), skip dragged building
+  const sorted = [...buildings]
+    .filter(b => !dragState || b.seed !== dragState.building.seed)
+    .sort((a, b) => (a.col + a.row) - (b.col + b.row))
 
   const time = Date.now() / 1000
 
@@ -669,6 +726,15 @@ export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0
       const fireCy = baseY - totalH
       drawFire(ctx, fireCx, fireCy, b.w, b.h, time)
     }
+  }
+
+  // Draw ghost building semi-transparently at drag position
+  if (dragState) {
+    const ghost = { ...dragState.building, col: dragState.ghostCol, row: dragState.ghostRow }
+    ctx.save()
+    ctx.globalAlpha = 0.6
+    drawBuilding(ctx, ghost, offsetX, offsetY, false)
+    ctx.restore()
   }
 
   ctx.restore()

@@ -1,97 +1,184 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { renderCity } from '../lib/cityRenderer.js'
+import { useEffect, useRef, useCallback } from 'react'
+import { renderCity, screenToGrid, getViewOffsets, hitTestBuildings } from '../lib/cityRenderer.js'
+import { CITY_COLS, CITY_ROWS } from '../lib/cityEngine.js'
 
-export default function CityCanvas({ buildings, newBuildingId, fires = [] }) {
+export default function CityCanvas({ buildings, newBuildingId, fires = [], onBuildingMove }) {
   const canvasRef = useRef(null)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
-  const [zoom, setZoom] = useState(1)
-  const isDragging = useRef(false)
-  const lastMouse = useRef({ x: 0, y: 0 })
   const animFrame = useRef(null)
-  const glowPhase = useRef(0)
-  const lastTimestamp = useRef(0)
 
-  // Render loop
+  // Mutable render state — all kept in refs so rAF loop always reads fresh values
+  const panRef = useRef({ x: 0, y: 0 })
+  const zoomRef = useRef(1)
+  const buildingsRef = useRef(buildings)
+  const newBuildingIdRef = useRef(newBuildingId)
+  const firesRef = useRef(fires)
+  const dragRef = useRef(null) // { building, ghostCol, ghostRow, isFree }
+
+  // Keep refs in sync with props
+  buildingsRef.current = buildings
+  newBuildingIdRef.current = newBuildingId
+  firesRef.current = fires
+
+  // Single rAF loop — starts once, reads all state from refs
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+    let running = true
 
-    let animRunning = true
-
-    function frame(timestamp) {
-      if (!animRunning) return
-      const dt = timestamp - lastTimestamp.current
-      lastTimestamp.current = timestamp
-      glowPhase.current = (glowPhase.current + dt * 0.002) % (Math.PI * 2)
-
-      // Resize canvas to container
+    function frame() {
+      if (!running) return
       const parent = canvas.parentElement
       if (parent) {
         const { width, height } = parent.getBoundingClientRect()
-        if (canvas.width !== width || canvas.height !== height) {
-          canvas.width = width
-          canvas.height = height
+        if (canvas.width !== Math.round(width) || canvas.height !== Math.round(height)) {
+          canvas.width = Math.round(width)
+          canvas.height = Math.round(height)
         }
       }
-
-      renderCity(canvas, buildings, newBuildingId, pan, zoom, fires)
+      renderCity(
+        canvas,
+        buildingsRef.current,
+        newBuildingIdRef.current,
+        panRef.current,
+        zoomRef.current,
+        firesRef.current,
+        dragRef.current,
+      )
       animFrame.current = requestAnimationFrame(frame)
     }
 
     animFrame.current = requestAnimationFrame(frame)
     return () => {
-      animRunning = false
+      running = false
       cancelAnimationFrame(animFrame.current)
     }
-  }, [buildings, newBuildingId, pan, zoom, fires])
+  }, []) // never restarts
 
-  // Pan handlers
-  const onMouseDown = useCallback((e) => {
-    isDragging.current = true
-    lastMouse.current = { x: e.clientX, y: e.clientY }
+  // Convert clientX/Y to local canvas coords (after pan/zoom removed)
+  const clientToLocal = useCallback((clientX, clientY) => {
+    const canvas = canvasRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const cx = (clientX - rect.left) * scaleX
+    const cy = (clientY - rect.top) * scaleY
+    const zoom = zoomRef.current
+    const pan = panRef.current
+    return { lx: (cx - pan.x) / zoom, ly: (cy - pan.y) / zoom }
   }, [])
 
-  const onMouseMove = useCallback((e) => {
-    if (!isDragging.current) return
-    const dx = e.clientX - lastMouse.current.x
-    const dy = e.clientY - lastMouse.current.y
-    lastMouse.current = { x: e.clientX, y: e.clientY }
-    setPan(p => ({ x: p.x + dx, y: p.y + dy }))
+  // Convert clientX/Y to fractional grid coordinates
+  const clientToGrid = useCallback((clientX, clientY) => {
+    const canvas = canvasRef.current
+    if (!canvas) return null
+    const local = clientToLocal(clientX, clientY)
+    if (!local) return null
+    const { offsetX, offsetY } = getViewOffsets(canvas.width, canvas.height, zoomRef.current)
+    return screenToGrid(local.lx, local.ly, offsetX, offsetY)
+  }, [clientToLocal])
+
+  // Pointer tracking
+  const isPanning = useRef(false)
+  const lastPointer = useRef({ x: 0, y: 0 })
+
+  const checkFree = useCallback((dragging, newCol, newRow) => {
+    if (newCol < 0 || newRow < 0 || newCol + dragging.w > CITY_COLS || newRow + dragging.h > CITY_ROWS) return false
+    for (const b of buildingsRef.current) {
+      if (b.seed === dragging.seed) continue
+      if (newCol < b.col + b.w && newCol + dragging.w > b.col &&
+          newRow < b.row + b.h && newRow + dragging.h > b.row) {
+        return false
+      }
+    }
+    return true
   }, [])
 
-  const onMouseUp = useCallback(() => {
-    isDragging.current = false
-  }, [])
+  const onPointerDown = useCallback((clientX, clientY) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const local = clientToLocal(clientX, clientY)
+    if (!local) return
+    const { offsetX, offsetY } = getViewOffsets(canvas.width, canvas.height, zoomRef.current)
+    const hit = hitTestBuildings(buildingsRef.current, local.lx, local.ly, offsetX, offsetY)
 
-  // Zoom
+    if (hit && !hit.isLandmark) {
+      // Start building drag
+      dragRef.current = {
+        building: hit,
+        ghostCol: hit.col,
+        ghostRow: hit.row,
+        isFree: true,
+      }
+    } else {
+      // Start map pan
+      isPanning.current = true
+    }
+    lastPointer.current = { x: clientX, y: clientY }
+  }, [clientToLocal])
+
+  const onPointerMove = useCallback((clientX, clientY) => {
+    if (dragRef.current) {
+      const gridPos = clientToGrid(clientX, clientY)
+      if (!gridPos) return
+      const gc = Math.round(gridPos.col - dragRef.current.building.w / 2)
+      const gr = Math.round(gridPos.row - dragRef.current.building.h / 2)
+      const clampedCol = Math.max(0, Math.min(CITY_COLS - dragRef.current.building.w, gc))
+      const clampedRow = Math.max(0, Math.min(CITY_ROWS - dragRef.current.building.h, gr))
+      dragRef.current = {
+        ...dragRef.current,
+        ghostCol: clampedCol,
+        ghostRow: clampedRow,
+        isFree: checkFree(dragRef.current.building, clampedCol, clampedRow),
+      }
+    } else if (isPanning.current) {
+      const dx = clientX - lastPointer.current.x
+      const dy = clientY - lastPointer.current.y
+      panRef.current = { x: panRef.current.x + dx, y: panRef.current.y + dy }
+    }
+    lastPointer.current = { x: clientX, y: clientY }
+  }, [clientToGrid, checkFree])
+
+  const onPointerUp = useCallback(() => {
+    if (dragRef.current) {
+      const { building, ghostCol, ghostRow, isFree } = dragRef.current
+      if (isFree && (ghostCol !== building.col || ghostRow !== building.row)) {
+        onBuildingMove?.(building, ghostCol, ghostRow)
+      }
+      dragRef.current = null
+    }
+    isPanning.current = false
+  }, [onBuildingMove])
+
+  // Mouse events
+  const onMouseDown = useCallback((e) => { onPointerDown(e.clientX, e.clientY) }, [onPointerDown])
+  const onMouseMove = useCallback((e) => { onPointerMove(e.clientX, e.clientY) }, [onPointerMove])
+  const onMouseUp = useCallback(() => { onPointerUp() }, [onPointerUp])
+
+  // Wheel zoom
   const onWheel = useCallback((e) => {
     e.preventDefault()
     const delta = e.deltaY > 0 ? 0.9 : 1.1
-    setZoom(z => Math.min(3, Math.max(0.3, z * delta)))
+    zoomRef.current = Math.min(3, Math.max(0.3, zoomRef.current * delta))
   }, [])
 
-  // Touch support
+  // Touch events
   const lastTouch = useRef(null)
   const onTouchStart = useCallback((e) => {
     if (e.touches.length === 1) {
-      isDragging.current = true
-      lastMouse.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+      onPointerDown(e.touches[0].clientX, e.touches[0].clientY)
+      lastTouch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
     }
-  }, [])
-  const onTouchMove = useCallback((e) => {
-    if (e.touches.length === 1 && isDragging.current) {
-      const dx = e.touches[0].clientX - lastMouse.current.x
-      const dy = e.touches[0].clientY - lastMouse.current.y
-      lastMouse.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-      setPan(p => ({ x: p.x + dx, y: p.y + dy }))
-    }
-  }, [])
-  const onTouchEnd = useCallback(() => { isDragging.current = false }, [])
+  }, [onPointerDown])
 
-  const resetView = useCallback(() => {
-    setPan({ x: 0, y: 0 })
-    setZoom(1)
-  }, [])
+  const onTouchMove = useCallback((e) => {
+    e.preventDefault()
+    if (e.touches.length === 1) {
+      onPointerMove(e.touches[0].clientX, e.touches[0].clientY)
+    }
+  }, [onPointerMove])
+
+  const onTouchEnd = useCallback(() => { onPointerUp() }, [onPointerUp])
 
   return (
     <div className="relative w-full h-full">
@@ -111,15 +198,15 @@ export default function CityCanvas({ buildings, newBuildingId, fires = [] }) {
       {/* Controls */}
       <div className="absolute bottom-3 right-3 flex flex-col gap-1">
         <button
-          onClick={() => setZoom(z => Math.min(3, z * 1.2))}
+          onClick={() => { zoomRef.current = Math.min(3, zoomRef.current * 1.2) }}
           className="w-8 h-8 rounded bg-black/30 text-white/80 hover:bg-black/50 text-lg leading-none flex items-center justify-center"
         >+</button>
         <button
-          onClick={() => setZoom(z => Math.max(0.3, z * 0.8))}
+          onClick={() => { zoomRef.current = Math.max(0.3, zoomRef.current * 0.8) }}
           className="w-8 h-8 rounded bg-black/30 text-white/80 hover:bg-black/50 text-lg leading-none flex items-center justify-center"
         >−</button>
         <button
-          onClick={resetView}
+          onClick={() => { panRef.current = { x: 0, y: 0 }; zoomRef.current = 1 }}
           className="w-8 h-8 rounded bg-black/30 text-white/80 hover:bg-black/50 text-xs flex items-center justify-center"
           title="Reset view"
         >⌂</button>

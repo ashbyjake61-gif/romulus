@@ -6,6 +6,7 @@ import { SHOP_BUILDINGS } from '../components/BuildingShop.jsx'
 const LOCAL_KEY = 'romulus_city_state'
 const FIRE_KEY = 'romulus_fires'
 const PURCHASED_KEY = 'romulus_purchased'
+const RELOC_KEY = 'romulus_relocations'
 
 function loadLocal() {
   try { const raw = localStorage.getItem(LOCAL_KEY); if (raw) return JSON.parse(raw) } catch {}
@@ -27,6 +28,13 @@ function loadPurchased() {
 }
 function savePurchased(p) {
   try { localStorage.setItem(PURCHASED_KEY, JSON.stringify(p)) } catch {}
+}
+function loadRelocations() {
+  try { const raw = localStorage.getItem(RELOC_KEY); if (raw) return JSON.parse(raw) } catch {}
+  return {}
+}
+function saveRelocations(r) {
+  try { localStorage.setItem(RELOC_KEY, JSON.stringify(r)) } catch {}
 }
 
 const DEFAULT_STATE = { totalSessions: 0, totalMinutes: 0, spentDenarii: 0 }
@@ -58,13 +66,20 @@ export function useCity(user) {
   const [loading, setLoading] = useState(false)
   const [fires, setFires] = useState(() => loadFires())
   const [purchasedBuildings, setPurchasedBuildings] = useState(() => loadPurchased())
+  const [relocations, setRelocations] = useState(() => loadRelocations())
 
   const totalHours = cityState.totalMinutes / 60
   const totalSessions = cityState.totalSessions
   const denarii = Math.max(0, cityState.totalMinutes - (cityState.spentDenarii || 0))
 
   useEffect(() => {
-    const layout = buildCityLayout(cityState.totalSessions, totalHours)
+    const rawLayout = buildCityLayout(cityState.totalSessions, totalHours)
+
+    // Apply saved relocations to auto-placed and landmark buildings
+    const layout = rawLayout.map(b => {
+      const key = String(b.seed)
+      return relocations[key] ? { ...b, col: relocations[key].col, row: relocations[key].row } : b
+    })
 
     // Build occupation grid from auto-placed buildings
     const grid = Array.from({ length: 20 }, () => Array(20).fill(false))
@@ -107,7 +122,7 @@ export function useCity(user) {
     }
 
     setBuildings(allBuildings)
-  }, [cityState.totalSessions, totalHours, purchasedBuildings])
+  }, [cityState.totalSessions, totalHours, purchasedBuildings, relocations])
 
   const persistToSupabase = useCallback(async (state, userId, purchased) => {
     if (!userId) return
@@ -213,11 +228,34 @@ export function useCity(user) {
     setFires(prev => { const next = prev.filter(f => f.id !== fireId); saveFires(next); return next })
   }, [user, persistToSupabase, purchasedBuildings])
 
+  const moveBuilding = useCallback((building, newCol, newRow) => {
+    const key = String(building.seed)
+    if (key.startsWith('purchased_')) {
+      // Update position in purchasedBuildings
+      setPurchasedBuildings(prev => {
+        const next = prev.map(pb => pb.seed === key ? { ...pb, col: newCol, row: newRow } : pb)
+        savePurchased(next)
+        setCityState(state => {
+          if (user) persistToSupabase(state, user.id, next)
+          return state
+        })
+        return next
+      })
+    } else {
+      // Auto-placed or landmark — store relocation by seed key
+      setRelocations(prev => {
+        const next = { ...prev, [key]: { col: newCol, row: newRow } }
+        saveRelocations(next)
+        return next
+      })
+    }
+  }, [user, persistToSupabase])
+
   const nextLandmark = LANDMARKS.find(lm => totalHours < lm.hoursRequired) || null
 
   return {
     buildings, totalHours, totalSessions, newBuildingId, loading,
     fires, denarii, completeSession, failSession, repairByPay,
-    purchaseBuilding, nextLandmark,
+    purchaseBuilding, moveBuilding, nextLandmark,
   }
 }

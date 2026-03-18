@@ -63,7 +63,7 @@ export default function App() {
     }
   }, [user])
 
-  const { buildings, totalHours, totalSessions, newBuildingId, fires, denarii, completeSession, failSession, repairByPay, purchaseBuilding, nextLandmark } = useCity(user)
+  const { buildings, totalHours, totalSessions, newBuildingId, fires, denarii, completeSession, failSession, repairByPay, purchaseBuilding, moveBuilding, nextLandmark } = useCity(user)
 
   const onSessionComplete = useCallback((durationMinutes) => {
     const newHours = totalHours + durationMinutes / 60
@@ -107,7 +107,7 @@ export default function App() {
       style={{ background: '#d4b896' }}
     >
       {/* City canvas fills the whole screen */}
-      <CityCanvas buildings={buildings} newBuildingId={newBuildingId} fires={fires} />
+      <CityCanvas buildings={buildings} newBuildingId={newBuildingId} fires={fires} onBuildingMove={moveBuilding} />
 
       {/* Paywall overlay */}
       {showPaywall && (
