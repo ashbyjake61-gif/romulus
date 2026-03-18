@@ -141,15 +141,20 @@ export function buildCityLayout(sessions, totalHours) {
   // Place buildings in sessions
   let placed = 0
   for (let i = 0; i < sessions && placed < sessions; i++) {
-    // Pick a building type based on session index (weighted toward smaller early on)
-    const progress = i / Math.max(sessions, 1)
-    const availableTypes = BUILDING_TYPES.filter(t => {
-      if (progress < 0.2) return t.w <= 1 && t.h <= 1
-      if (progress < 0.5) return t.w <= 2 && t.h <= 2
-      return true
-    })
-    const typeIdx = Math.floor(rand() * availableTypes.length)
-    const btype = availableTypes[typeIdx]
+    // First building is always an insula
+    let btype
+    if (i === 0) {
+      btype = BUILDING_TYPES.find(t => t.id === 'insula')
+    } else {
+      const progress = i / Math.max(sessions, 1)
+      const availableTypes = BUILDING_TYPES.filter(t => {
+        if (progress < 0.2) return t.w <= 1 && t.h <= 1
+        if (progress < 0.5) return t.w <= 2 && t.h <= 2
+        return true
+      })
+      const typeIdx = Math.floor(rand() * availableTypes.length)
+      btype = availableTypes[typeIdx]
+    }
 
     // Try to place near center first, with some randomness
     let placed_ = false
