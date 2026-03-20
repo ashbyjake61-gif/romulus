@@ -107,7 +107,7 @@ export default function App() {
       style={{ background: '#d4b896' }}
     >
       {/* City canvas fills the whole screen */}
-      <CityCanvas buildings={buildings} newBuildingId={newBuildingId} fires={fires} onBuildingMove={moveBuilding} />
+      <CityCanvas buildings={buildings} newBuildingId={newBuildingId} fires={fires} />
 
       {/* Paywall overlay */}
       {showPaywall && (
