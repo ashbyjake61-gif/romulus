@@ -7,6 +7,7 @@ export const CITY_ROWS = 20
 // Building type definitions
 export const BUILDING_TYPES = [
   { id: 'insula',       label: 'Insula',          w: 1, h: 1, floors: 2, color: '#c8a87a' },
+  { id: 'bakery', label: 'Pistrina', w: 1, h: 1, floors: 2, color: '#c89060' },
   { id: 'domus',        label: 'Domus',            w: 2, h: 1, floors: 2, color: '#d4956a' },
   { id: 'taberna',      label: 'Taberna',          w: 1, h: 1, floors: 1, color: '#b8926a' },
   { id: 'thermopolium', label: 'Thermopolium',     w: 1, h: 2, floors: 1, color: '#c09060' },
@@ -141,10 +142,12 @@ export function buildCityLayout(sessions, totalHours) {
   // Place buildings in sessions
   let placed = 0
   for (let i = 0; i < sessions && placed < sessions; i++) {
-    // First building is always an insula
+    // First building is always an insula, second always a bakery (to the right)
     let btype
     if (i === 0) {
       btype = BUILDING_TYPES.find(t => t.id === 'insula')
+    } else if (i === 1) {
+      btype = BUILDING_TYPES.find(t => t.id === 'bakery')
     } else {
       const progress = i / Math.max(sessions, 1)
       const availableTypes = BUILDING_TYPES.filter(t => {
@@ -154,6 +157,26 @@ export function buildCityLayout(sessions, totalHours) {
       })
       const typeIdx = Math.floor(rand() * availableTypes.length)
       btype = availableTypes[typeIdx]
+    }
+
+    // For bakery (i===1): force placement to the right of the insula
+    if (i === 1) {
+      const insula = buildings.find(b => b.id === 'insula')
+      let placed_ = false
+      if (insula) {
+        for (let dc = 1; dc <= CITY_COLS; dc++) {
+          const tc = insula.col + dc
+          if (isFree(grid, tc, insula.row, btype.w, btype.h)) {
+            occupy(grid, tc, insula.row, btype.w, btype.h)
+            buildings.push({ ...btype, col: tc, row: insula.row, seed: i, unlocked: true, isLandmark: false })
+            placed_++
+            placed++
+            break
+          }
+        }
+      }
+      if (!placed_) break
+      continue
     }
 
     // Try to place near center first, with some randomness

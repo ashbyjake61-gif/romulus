@@ -469,6 +469,312 @@ function buildInsulaSpriteCanvas(_color) {
   return off
 }
 
+// ── Bakery sprite (Pistrina) — 72×68 logical px → 144×136 screen px ──────
+// Asymmetric: tall right production section + shorter left shop-front.
+// Historically: Roman pistrina had grain mills, domed fornax oven, display
+// counter (trapeza), amphorae, grain sacks, and a chimney for the oven.
+function buildBakerySpriteCanvas(_color) {
+  const W = 72, H = 68
+  const off = document.createElement('canvas')
+  off.width = W; off.height = H
+  const oc = off.getContext('2d')
+
+  // ── Palette (warm bread/terracotta) ───────────────────────────
+  const sLit  = '#eccf98'   // stucco lit — honey ochre, warmer than villa
+  const sMid  = '#d8b47c'   // stucco mid
+  const sShd  = '#b89058'   // stucco shadow
+  const rLit  = '#c84020'   // terracotta lit
+  const rShd  = '#803018'   // terracotta shadow
+  const ridge = '#f07040'   // roof ridge bright
+  const frz   = '#c8a040'   // golden frieze
+  const stLit = '#c0b080'   // stone lit
+  const stShd = '#907848'   // stone shadow
+  const cLit  = '#f0e8d0'   // column lit
+  const chim  = '#9a7258'   // chimney brick
+  const shut  = '#7a4c18'   // wood shutter
+  const wDark = '#16100a'   // window / arch dark
+  const sack  = '#c8a850'   // burlap sack
+  const sackD = '#8a6830'   // sack dark/tie
+  const amph  = '#c85428'   // amphora terracotta
+  const amphD = '#883818'   // amphora shadow
+  const ctr   = '#b0a070'   // counter stone
+  const ctrH  = '#c8b888'   // counter highlight
+  const bread = '#c47830'   // baked bread golden-brown
+  const rope  = '#8a6030'   // hanging rope
+
+  // ═══════════════════════════════════════════════════════════
+  // RIGHT SECTION  x=24–71  (48px wide, full height 0–67)
+  // ═══════════════════════════════════════════════════════════
+
+  // Base wall
+  spriteBrickWall(oc, 24, 11, 48, 57, sLit)
+  // Right-edge depth shadow
+  oc.fillStyle = sShd; oc.fillRect(68, 11, 4, 57)
+  // Left pilaster (lit)
+  oc.fillStyle = lighten(sLit, 0.20); oc.fillRect(24, 11, 4, 57)
+
+  // ── Gabled roof (rows 0–10, peak at x=48) ────────────────
+  for (let row = 0; row < 11; row++) {
+    const t     = row / 10
+    const halfW = Math.round(1 + t * 23)
+    const lx    = 48 - halfW
+    const lr = Math.round(200-t*54), lg = Math.round(64-t*22), lb = Math.round(32-t*12)
+    const sr = Math.round(130-t*38), sg = Math.round(42-t*14), sb = Math.round(22-t*10)
+    oc.fillStyle = `rgb(${lr},${lg},${lb})`
+    oc.fillRect(lx, row, halfW, 1)
+    oc.fillStyle = `rgb(${sr},${sg},${sb})`
+    oc.fillRect(48, row, halfW, 1)
+    if (row > 0 && row % 2 === 0 && halfW > 1) {
+      oc.fillStyle = 'rgba(0,0,0,0.12)'
+      oc.fillRect(lx, row, halfW * 2, 1)
+    }
+  }
+  oc.fillStyle = ridge; oc.fillRect(47, 0, 3, 1)
+  // Eave + cornice strip
+  oc.fillStyle = darken(rLit, 0.22); oc.fillRect(24, 10, 48, 1)
+  oc.fillStyle = lighten(stLit, 0.16); oc.fillRect(24, 11, 48, 1)
+
+  // ── Frieze (rows 12–13) ───────────────────────────────────
+  oc.fillStyle = frz; oc.fillRect(24, 12, 48, 2)
+  oc.fillStyle = lighten(frz, 0.26); oc.fillRect(24, 12, 48, 1)
+  oc.fillStyle = darken(frz, 0.26)
+  for (let x = 26; x < 70; x += 6) {
+    oc.fillRect(x, 12, 3, 2); oc.fillRect(x+3, 13, 2, 1)
+  }
+
+  // ── Upper floor (rows 14–26) — 2 windows with shutters ───
+  for (const [wx, ww] of [[29,9],[54,9]]) {
+    spriteWindow(oc, wx, 16, ww, 10, wDark)
+    oc.fillStyle = shut
+    oc.fillRect(wx-2, 16, 2, 10); oc.fillRect(wx+ww, 16, 2, 10)
+    oc.fillStyle = darken(shut, 0.26)
+    for (let sy = 17; sy < 26; sy += 2) {
+      oc.fillRect(wx-2, sy, 2, 1); oc.fillRect(wx+ww, sy, 2, 1)
+    }
+  }
+
+  // ── Belt course (rows 27–28) ──────────────────────────────
+  oc.fillStyle = lighten(sMid, 0.10); oc.fillRect(24, 27, 48, 1)
+  oc.fillStyle = darken(sMid, 0.14);  oc.fillRect(24, 28, 48, 1)
+
+  // ── Lower floor (rows 29–51) — bread oven arch + window ──
+  // Oven arch surround (golden frame)
+  oc.fillStyle = lighten(frz, 0.08)
+  oc.fillRect(30, 29, 28, 23)
+  // Oven arch crown (staircase semicircle, width=24, center=44)
+  oc.fillStyle = '#200c04'   // sooty dark
+  for (const [sx, sy, sw] of [
+    [36, 30, 8], [34, 31, 12], [32, 32, 16],
+    [31, 33, 18], [30, 34, 20],
+  ]) oc.fillRect(sx, sy, sw, 1)
+  // Oven body (sooty interior)
+  oc.fillRect(30, 35, 28, 17)
+  // Fire glow layers — orange-red furnace heat
+  oc.fillStyle = 'rgba(255,120,20,0.52)'; oc.fillRect(30, 35, 28, 17)
+  oc.fillStyle = 'rgba(255,170,50,0.60)'; oc.fillRect(33, 38, 22, 12)
+  oc.fillStyle = 'rgba(255,215,90,0.55)'; oc.fillRect(36, 41, 16, 8)
+  oc.fillStyle = 'rgba(255,248,160,0.38)'; oc.fillRect(39, 44, 10, 4)
+  // Keystone
+  oc.fillStyle = darken(frz, 0.10); oc.fillRect(43, 28, 4, 3)
+  oc.fillStyle = lighten(frz, 0.28); oc.fillRect(44, 28, 2, 1)
+  // Small flanking window (right of oven)
+  spriteWindow(oc, 61, 33, 7, 9, wDark)
+  oc.fillStyle = shut
+  oc.fillRect(60, 33, 1, 9); oc.fillRect(68, 33, 1, 9)
+
+  // ── Stone plinth right (rows 52–55) ──────────────────────
+  oc.fillStyle = lighten(stLit, 0.18); oc.fillRect(24, 52, 48, 1)
+  spriteBrickWall(oc, 24, 53, 48, 5, stLit)
+  oc.fillStyle = stShd; oc.fillRect(68, 53, 4, 5)
+
+  // ── Steps right (rows 58–67) ─────────────────────────────
+  for (let s = 0; s < 4; s++) {
+    const sy = 58 + s * 2
+    oc.fillStyle = lighten(stLit, 0.10 - s * 0.04)
+    oc.fillRect(24, sy, 48, 1)
+    oc.fillStyle = 'rgba(255,255,255,0.09)'; oc.fillRect(24, sy, 48, 1)
+    oc.fillStyle = darken(stLit, 0.12 + s * 0.07)
+    oc.fillRect(24, sy+1, 48, 1)
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // LEFT SECTION  x=0–31  (rows 23–67, shorter)
+  // ═══════════════════════════════════════════════════════════
+
+  // Wall fill
+  spriteBrickWall(oc, 0, 27, 32, 25, sLit)
+  // Right-edge of left section (slightly shadowed where it meets right section)
+  oc.fillStyle = darken(sLit, 0.18); oc.fillRect(29, 27, 3, 25)
+
+  // ── Lean-to / shed roof of left section (rows 23–27) ─────
+  // Low-pitch slope: right edge high (row 23), left drops 3 rows
+  for (let row = 0; row < 5; row++) {
+    const xEnd = 32 - row * 4
+    const lr = Math.round(198 - row*16), lg = Math.round(62 - row*8), lb = Math.round(31 - row*5)
+    oc.fillStyle = `rgb(${lr},${lg},${lb})`
+    oc.fillRect(0, 23 + row, Math.max(xEnd, 2), 1)
+    if (row > 0 && row % 2 === 0) {
+      oc.fillStyle = 'rgba(0,0,0,0.13)'
+      oc.fillRect(0, 23 + row, Math.max(xEnd, 2), 1)
+    }
+  }
+  // Eave strip at bottom of lean-to roof
+  oc.fillStyle = darken(rLit, 0.20); oc.fillRect(0, 27, 30, 1)
+
+  // ── Open shop-front arch (rows 28–50, x=0-31) ────────────
+  // The shop has a large open archway — typical Roman taberna front
+  // Arch surround
+  oc.fillStyle = lighten(frz, 0.06)
+  oc.fillRect(2, 27, 28, 4)   // lintel band above arch
+  // Arch opening (large, open to street)
+  oc.fillStyle = '#1a100a'
+  oc.fillRect(3, 31, 26, 17)
+  // Stepped arch crown (width 24, center=16)
+  for (const [sx, sy, sw] of [
+    [9, 30, 6], [6, 29, 12], [4, 28, 16],
+  ]) { oc.fillStyle = '#1a100a'; oc.fillRect(sx, sy, sw, 1) }
+  // Warm interior — shopfront light
+  oc.fillStyle = 'rgba(255,210,120,0.35)'; oc.fillRect(3, 31, 26, 17)
+  oc.fillStyle = 'rgba(255,230,160,0.25)'; oc.fillRect(6, 33, 20, 13)
+
+  // ── Stone display counter (rows 47–51) ───────────────────
+  oc.fillStyle = ctrH; oc.fillRect(0, 47, 32, 1)    // top highlight
+  oc.fillStyle = ctr;  oc.fillRect(0, 48, 32, 3)    // slab body
+  oc.fillStyle = darken(ctr, 0.22); oc.fillRect(0, 51, 32, 1)  // under-lip shadow
+  // Counter face (front of slab)
+  spriteBrickWall(oc, 0, 48, 32, 4, ctr)
+
+  // ── Grain sacks (leaning left wall, rows 33–47) ──────────
+  // Sack 1 (large, x=2-12)
+  oc.fillStyle = sack
+  oc.fillRect(2, 38, 10, 9)   // body
+  oc.fillRect(3, 36, 8, 3)    // neck taper
+  oc.fillRect(4, 34, 6, 2)    // top bulge
+  oc.fillStyle = lighten(sack, 0.14)
+  oc.fillRect(2, 38, 4, 9)    // lit left face
+  oc.fillStyle = darken(sack, 0.18)
+  oc.fillRect(9, 38, 3, 9)    // shadow right
+  // Tie cord
+  oc.fillStyle = sackD
+  oc.fillRect(3, 37, 8, 1)
+  // Sack 2 (smaller, x=1-9, rows 38-47, slightly in front)
+  oc.fillStyle = lighten(sack, 0.08)
+  oc.fillRect(13, 40, 8, 7)
+  oc.fillRect(14, 38, 6, 3)
+  oc.fillRect(15, 37, 4, 2)
+  oc.fillStyle = sackD; oc.fillRect(14, 39, 6, 1)
+  oc.fillStyle = darken(sack, 0.16); oc.fillRect(18, 40, 3, 7)
+
+  // ── Amphora (terracotta jar, x=20-27, rows 39–47) ────────
+  oc.fillStyle = amph
+  oc.fillRect(20, 42, 8, 5)   // body
+  oc.fillRect(21, 40, 6, 3)   // neck
+  oc.fillRect(22, 39, 4, 2)   // mouth rim
+  oc.fillRect(23, 47, 2, 1)   // pointed base tip
+  oc.fillStyle = lighten(amph, 0.16); oc.fillRect(20, 42, 3, 5)  // lit
+  oc.fillStyle = amphD; oc.fillRect(25, 42, 3, 5)               // shadow
+  // Handle suggestion
+  oc.fillStyle = darken(amph, 0.10)
+  oc.fillRect(19, 42, 1, 3); oc.fillRect(28, 42, 1, 3)
+
+  // ── Hanging bread loaves above counter (rows 35–45) ──────
+  // 3 oval bread loaves hanging on rope
+  oc.fillStyle = rope
+  oc.fillRect(3, 33, 1, 14)    // left rope
+  oc.fillRect(11, 33, 1, 12)   // mid rope
+  oc.fillRect(19, 33, 1, 11)   // right rope
+  for (const [bx, by] of [[1,38],[9,37],[17,36]]) {
+    oc.fillStyle = darken(bread, 0.14); oc.fillRect(bx, by+1, 5, 5)  // shadow
+    oc.fillStyle = bread; oc.fillRect(bx, by, 5, 5)
+    oc.fillStyle = lighten(bread, 0.22); oc.fillRect(bx, by, 3, 2)   // crust glint
+    oc.fillStyle = darken(bread, 0.24); oc.fillRect(bx+1, by+4, 3, 1) // score line
+  }
+
+  // ── Stone plinth left (rows 52–55) ───────────────────────
+  oc.fillStyle = lighten(stLit, 0.18); oc.fillRect(0, 52, 32, 1)
+  spriteBrickWall(oc, 0, 53, 32, 5, stLit)
+
+  // ── Steps left (rows 58–67) ──────────────────────────────
+  for (let s = 0; s < 4; s++) {
+    const sy = 58 + s * 2
+    oc.fillStyle = lighten(stLit, 0.10 - s * 0.04)
+    oc.fillRect(0, sy, 32, 1)
+    oc.fillStyle = darken(stLit, 0.12 + s * 0.07)
+    oc.fillRect(0, sy+1, 32, 1)
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CHIMNEY  x=60–66  (protrudes above roof)
+  // ═══════════════════════════════════════════════════════════
+  // Chimney body (brick-coloured, rising above roof line)
+  oc.fillStyle = lighten(chim, 0.12); oc.fillRect(59, 0, 9, 1)  // cap flange
+  oc.fillStyle = chim
+  oc.fillRect(60, 1, 7, 9)   // shaft above roof
+  // Brick texture on chimney
+  oc.fillStyle = darken(chim, 0.18)
+  for (let y = 1; y < 10; y += 3) {
+    const off = y % 6 === 0 ? 0 : 3
+    oc.fillRect(60 + off, y + 2, 3, 1)
+  }
+  oc.fillStyle = 'rgba(0,0,0,0.22)'; oc.fillRect(67, 1, 1, 9)  // right shadow
+  oc.fillStyle = lighten(chim, 0.20); oc.fillRect(60, 1, 1, 9)  // left highlight
+
+  // ── Junction seam (where sections meet x≈28-29) ──────────
+  // Vertical shadow line where left section roof meets right wall
+  oc.fillStyle = 'rgba(0,0,0,0.30)'
+  oc.fillRect(28, 23, 1, 5)   // shadow under lean-to edge
+
+  return off
+}
+
+// Bakery chimney smoke — drawn in world space inside world transform
+function drawSmoke2D(ctx, cx, topY, time) {
+  for (let i = 0; i < 5; i++) {
+    const age     = i / 4            // 0 = fresh near chimney, 1 = old high up
+    const yOff    = age * 28         // rises upward
+    const xWaver  = Math.sin(time * 0.9 + i * 1.4) * (2 + age * 5)
+    const opacity = (1 - age) * 0.45
+    const radius  = 3 + age * 7
+    const sx = cx + xWaver
+    const sy = topY - yOff
+    const g  = ctx.createRadialGradient(sx, sy, 0, sx, sy, radius)
+    g.addColorStop(0, `rgba(210,200,190,${opacity.toFixed(2)})`)
+    g.addColorStop(1, `rgba(180,170,160,0)`)
+    ctx.fillStyle = g
+    ctx.beginPath(); ctx.arc(sx, sy, radius, 0, Math.PI * 2); ctx.fill()
+  }
+}
+
+// Cobblestone path between two buildings at ground level
+function drawCobblePath(ctx, x1, x2, groundY) {
+  if (x2 <= x1 + 4) return
+  const pH = 12
+  // Base stone colour
+  ctx.fillStyle = '#6a6458'
+  ctx.fillRect(x1, groundY - pH, x2 - x1, pH)
+  // Cobblestone blocks (2 rows, alternating offset)
+  const SW = 10, SH = 6
+  for (let row = 0; row < 2; row++) {
+    const offset = row % 2 === 0 ? 0 : SW * 0.5
+    for (let sx = x1 - offset; sx < x2; sx += SW) {
+      const clampX = Math.max(sx, x1)
+      const clampW = Math.min(sx + SW - 1, x2) - clampX
+      if (clampW <= 0) continue
+      const by = groundY - pH + row * SH
+      const n  = tileNoise(sx * 0.09, by * 0.13)
+      ctx.fillStyle = n > 0.55 ? '#7a7468' : (n < 0.28 ? '#585248' : '#686058')
+      ctx.fillRect(clampX, by, clampW, SH - 1)
+      // Top highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(clampX, by, clampW, 1)
+      // Right mortar
+      ctx.fillStyle = 'rgba(0,0,0,0.20)'; ctx.fillRect(clampX + clampW, by, 1, SH - 1)
+    }
+  }
+  // Top edge highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.08)'
+  ctx.fillRect(x1, groundY - pH, x2 - x1, 1)
+}
+
 // ── Pixel sprite cache ────────────────────────────────────────
 const pixelSpriteCache = {}
 function getPixelSprite(id, color) {
@@ -478,6 +784,7 @@ function getPixelSprite(id, color) {
 }
 function buildPixelSprite(id, color) {
   if (id === 'insula') return buildInsulaSpriteCanvas(color)
+  if (id === 'bakery')  return buildBakerySpriteCanvas(color)
   return null
 }
 
@@ -914,6 +1221,10 @@ function drawBuilding2D(ctx, b, streetOffsetX, groundY, isNew, onFire, time) {
     const sh  = pixelSprite.height * PIXEL
     const ox  = Math.round((sw - bw) / 2)   // centre wider sprite on the tile
     ctx.drawImage(pixelSprite, x - ox, groundY - sh, sw, sh)
+    // Bakery chimney smoke: chimney at logical (63, 1) → world offset (+94, -sh+2)
+    if (id === 'bakery') {
+      drawSmoke2D(ctx, x - ox + 63 * PIXEL, groundY - sh + 2 * PIXEL, time)
+    }
     if (isNew)  drawSparkle2D(ctx, x + bw / 2, groundY - sh)
     if (onFire) drawFire2D(ctx, x + bw / 2, groundY - sh, sw, time)
     return
@@ -1173,6 +1484,23 @@ export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0
     } else {
       drawBuilding2D(oc, b, streetOffsetX, groundY, b.id === newBuildingId, isOnFire, time)
     }
+  }
+
+  // Cobblestone path connecting insula to bakery when both exist
+  const insulaB  = buildings.find(b => b.id === 'insula')
+  const bakeryB  = buildings.find(b => b.id === 'bakery')
+  if (insulaB && bakeryB) {
+    const iSprite = getPixelSprite('insula', insulaB.color)
+    const bSprite = getPixelSprite('bakery', bakeryB.color)
+    const iSW  = iSprite ? iSprite.width * PIXEL : insulaB.w * TILE_W
+    const bSW  = bSprite ? bSprite.width * PIXEL : bakeryB.w * TILE_W
+    const iX   = streetOffsetX + insulaB.col * TILE_W
+    const bX   = streetOffsetX + bakeryB.col * TILE_W
+    const iOX  = Math.round((iSW - insulaB.w * TILE_W) / 2)
+    const bOX  = Math.round((bSW - bakeryB.w * TILE_W) / 2)
+    const pathX1 = iX - iOX + iSW   // right edge of villa sprite
+    const pathX2 = bX - bOX         // left edge of bakery sprite
+    if (pathX2 > pathX1) drawCobblePath(oc, pathX1 - 4, pathX2 + 4, groundY)
   }
 
   initCitizens()
