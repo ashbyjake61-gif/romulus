@@ -727,6 +727,316 @@ function buildBakerySpriteCanvas(_color) {
   return off
 }
 
+// ── Taberna sprite (Roman shop) — 48×52 logical px → 96×104 screen px ───────
+// Single-storey street shop: wide open arch, stone counter with dolia,
+// hanging goods, flanking amphorae — lined every Roman street.
+function buildTabernaSpriteCanvas(_color) {
+  const W = 48, H = 52
+  const off = document.createElement('canvas')
+  off.width = W; off.height = H
+  const oc = off.getContext('2d')
+  const wLit = '#dfc898', wShd = '#af8f58'
+  const stLit = '#c0b07a', stShd = '#907848'
+  const rLit = '#c84020', ridge = '#f07040', frz = '#c8a040'
+  const wDark = '#16100a'
+  const amph = '#c85428', amphD = '#883818'
+  const ctr = '#b0a070', ctrH = '#c8b888'
+  const goods = '#8a5820', rope = '#7a5020'
+
+  // Roof rows 0–7
+  for (let row = 0; row < 8; row++) {
+    const t = row / 7, halfW = Math.round(1 + t * 23), lx = 24 - halfW
+    const lr = Math.round(196-t*48), lg = Math.round(60-t*18), lb = Math.round(30-t*10)
+    const sr = Math.round(126-t*34), sg = Math.round(38-t*12), sb = Math.round(19-t*8)
+    oc.fillStyle = `rgb(${lr},${lg},${lb})`; oc.fillRect(lx, row, halfW, 1)
+    oc.fillStyle = `rgb(${sr},${sg},${sb})`; oc.fillRect(24, row, halfW, 1)
+    if (row > 0 && row % 2 === 0) { oc.fillStyle = 'rgba(0,0,0,0.10)'; oc.fillRect(lx, row, halfW*2, 1) }
+  }
+  oc.fillStyle = ridge; oc.fillRect(23, 0, 3, 1)
+  oc.fillStyle = darken(rLit, 0.20); oc.fillRect(0, 7, W, 1)
+
+  // Frieze rows 8–9
+  oc.fillStyle = frz; oc.fillRect(0, 8, W, 2)
+  oc.fillStyle = lighten(frz, 0.22); oc.fillRect(0, 8, W, 1)
+  oc.fillStyle = darken(frz, 0.20)
+  for (let x = 2; x < W-1; x += 5) oc.fillRect(x, 8, 2, 2)
+
+  // Wall rows 10–38
+  spriteBrickWall(oc, 0, 10, W, 29, wLit)
+  oc.fillStyle = wShd; oc.fillRect(44, 10, 4, 29)
+  oc.fillStyle = lighten(wLit, 0.18); oc.fillRect(0, 10, 4, 29)
+
+  // Small storage window above arch rows 11–17
+  spriteWindow(oc, 19, 11, 10, 6, wDark)
+
+  // Large open taberna arch rows 18–36, x=4–43
+  const aX = 4, aW = 40, aTop = 18
+  oc.fillStyle = lighten(frz, 0.06); oc.fillRect(aX-1, aTop-1, aW+2, 20)
+  oc.fillStyle = wDark
+  for (const [sx, sy, sw] of [
+    [aX+16, aTop, 8], [aX+12, aTop+1, 16], [aX+8, aTop+2, 24],
+    [aX+5, aTop+3, 30], [aX+2, aTop+4, 36], [aX, aTop+5, 40],
+  ]) oc.fillRect(sx, sy, sw, 1)
+  oc.fillRect(aX, aTop+6, aW, 12)
+  oc.fillStyle = 'rgba(255,195,90,0.30)'; oc.fillRect(aX, aTop+6, aW, 12)
+  oc.fillStyle = 'rgba(255,220,130,0.18)'; oc.fillRect(aX+4, aTop+8, aW-8, 8)
+
+  // Hanging goods inside arch
+  for (const [rx, ry] of [[aX+8, aTop+7], [aX+19, aTop+7], [aX+30, aTop+7]]) {
+    oc.fillStyle = rope; oc.fillRect(rx, ry, 1, 6)
+    oc.fillStyle = goods; oc.fillRect(rx-1, ry+5, 4, 4)
+    oc.fillStyle = lighten(goods, 0.16); oc.fillRect(rx-1, ry+5, 2, 2)
+    oc.fillStyle = darken(goods, 0.22); oc.fillRect(rx, ry+8, 2, 1)
+  }
+
+  // Stone counter rows 32–36
+  oc.fillStyle = ctrH; oc.fillRect(aX+1, 32, aW-2, 1)
+  oc.fillStyle = ctr;  oc.fillRect(aX+1, 33, aW-2, 3)
+  oc.fillStyle = darken(ctr, 0.22); oc.fillRect(aX+1, 36, aW-2, 1)
+  // Embedded dolia (glowing pots)
+  for (const hx of [aX+4, aX+14, aX+24, aX+34]) {
+    oc.fillStyle = '#2a1a08'; oc.fillRect(hx, 33, 5, 2)
+    oc.fillStyle = 'rgba(255,155,35,0.55)'; oc.fillRect(hx+1, 33, 3, 1)
+  }
+
+  // Left amphora
+  oc.fillStyle = amph; oc.fillRect(0, 24, 4, 10); oc.fillRect(0, 23, 3, 2)
+  oc.fillStyle = lighten(amph, 0.14); oc.fillRect(0, 24, 2, 10)
+  oc.fillStyle = amphD; oc.fillRect(2, 24, 2, 10)
+  // Right amphora
+  oc.fillStyle = darken(amph, 0.06); oc.fillRect(44, 26, 4, 8); oc.fillRect(44, 25, 3, 2)
+  oc.fillStyle = lighten(amph, 0.10); oc.fillRect(44, 26, 2, 8)
+
+  // Plinth rows 39–42
+  oc.fillStyle = lighten(stLit, 0.16); oc.fillRect(0, 39, W, 1)
+  spriteBrickWall(oc, 0, 40, W, 3, stLit)
+  oc.fillStyle = stShd; oc.fillRect(44, 40, 4, 3)
+
+  // Steps rows 43–51 (4 steps + base)
+  for (let s = 0; s < 4; s++) {
+    const sy = 43 + s * 2
+    oc.fillStyle = lighten(stLit, 0.10 - s*0.04); oc.fillRect(0, sy, W, 1)
+    oc.fillStyle = darken(stLit, 0.10 + s*0.06); oc.fillRect(0, sy+1, W, 1)
+  }
+  oc.fillStyle = darken(stLit, 0.28); oc.fillRect(0, 51, W, 1)
+
+  return off
+}
+
+// ── Thermopolium sprite — 52×58 logical px → 104×116 screen px ────────────
+// Roman fast-food stand: Pompeian red fresco wall, stone counter
+// with 5 glowing dolia, bread & wine on display, amphorae at the side.
+function buildThermopoliumSpriteCanvas(_color) {
+  const W = 52, H = 58
+  const off = document.createElement('canvas')
+  off.width = W; off.height = H
+  const oc = off.getContext('2d')
+  const wLit = '#e8d0a0', wShd = '#b09050'
+  const stLit = '#c0b07a', stShd = '#907848'
+  const rLit = '#c84020', ridge = '#f07040', frz = '#c8a040'
+  const wDark = '#16100a'
+  const amph = '#c85428', amphD = '#883818'
+  const ctr = '#b8a878', ctrH = '#d0c090'
+  const frescoBg = '#a03418', frescoOch = '#d4a040', frescoLt = '#e8c860'
+  const bread = '#c47830'
+
+  // Roof rows 0–8
+  for (let row = 0; row < 9; row++) {
+    const t = row / 8, halfW = Math.round(1 + t * 25), lx = 26 - halfW
+    const lr = Math.round(198-t*50), lg = Math.round(62-t*20), lb = Math.round(31-t*11)
+    const sr = Math.round(128-t*36), sg = Math.round(40-t*12), sb = Math.round(20-t*8)
+    oc.fillStyle = `rgb(${lr},${lg},${lb})`; oc.fillRect(lx, row, halfW, 1)
+    oc.fillStyle = `rgb(${sr},${sg},${sb})`; oc.fillRect(26, row, halfW, 1)
+    if (row > 0 && row % 2 === 0) { oc.fillStyle = 'rgba(0,0,0,0.10)'; oc.fillRect(lx, row, halfW*2, 1) }
+  }
+  oc.fillStyle = ridge; oc.fillRect(25, 0, 3, 1)
+  oc.fillStyle = darken(rLit, 0.20); oc.fillRect(0, 8, W, 1)
+
+  // Frieze rows 9–10
+  oc.fillStyle = frz; oc.fillRect(0, 9, W, 2)
+  oc.fillStyle = lighten(frz, 0.22); oc.fillRect(0, 9, W, 1)
+  oc.fillStyle = darken(frz, 0.20)
+  for (let x = 2; x < W-1; x += 5) oc.fillRect(x, 9, 2, 2)
+
+  // Wall rows 11–44
+  spriteBrickWall(oc, 0, 11, W, 34, wLit)
+  oc.fillStyle = wShd; oc.fillRect(48, 11, 4, 34)
+  oc.fillStyle = lighten(wLit, 0.18); oc.fillRect(0, 11, 4, 34)
+
+  // Pompeian red fresco panel rows 12–30, x=6–45
+  oc.fillStyle = frescoBg; oc.fillRect(6, 12, 40, 19)
+  oc.fillStyle = frescoOch
+  oc.fillRect(6, 12, 40, 1); oc.fillRect(6, 30, 40, 1)
+  oc.fillRect(6, 12, 1, 19); oc.fillRect(45, 12, 1, 19)
+  // Central rules + column
+  oc.fillStyle = frescoLt
+  oc.fillRect(23, 15, 6, 1); oc.fillRect(23, 25, 6, 1); oc.fillRect(25, 15, 2, 11)
+  // Duck/food offering silhouette
+  oc.fillStyle = frescoOch
+  oc.fillRect(23, 17, 6, 3); oc.fillRect(24, 16, 3, 2); oc.fillRect(22, 19, 8, 2)
+  oc.fillRect(23, 21, 2, 2); oc.fillRect(26, 21, 2, 2); oc.fillRect(29, 16, 2, 1)
+  oc.fillStyle = frescoLt; oc.fillRect(24, 16, 1, 1)  // eye
+  // Side meander panels
+  for (let px = 9; px < 22; px += 4) { oc.fillStyle = frescoOch; oc.fillRect(px, 17, 2, 8); oc.fillStyle = darken(frescoBg, 0.10); oc.fillRect(px+2, 17, 1, 8) }
+  for (let px = 33; px < 44; px += 4) { oc.fillStyle = frescoOch; oc.fillRect(px, 17, 2, 8); oc.fillStyle = darken(frescoBg, 0.10); oc.fillRect(px+2, 17, 1, 8) }
+
+  // Service counter rows 31–44
+  oc.fillStyle = ctrH; oc.fillRect(4, 31, 44, 1)
+  oc.fillStyle = ctr;  oc.fillRect(4, 32, 44, 3)
+  oc.fillStyle = darken(ctr, 0.22); oc.fillRect(4, 35, 44, 1)
+  spriteBrickWall(oc, 4, 36, 44, 9, ctr)
+  oc.fillStyle = darken(ctr, 0.28); oc.fillRect(48, 36, 4, 9)
+
+  // 5 dolia holes — the thermopolium's signature
+  for (const hx of [6, 14, 22, 30, 38]) {
+    oc.fillStyle = '#1a0c06'; oc.fillRect(hx, 32, 6, 3)
+    oc.fillStyle = 'rgba(255,140,30,0.65)'; oc.fillRect(hx+1, 32, 4, 2)
+    oc.fillStyle = 'rgba(255,195,65,0.50)'; oc.fillRect(hx+2, 32, 2, 1)
+    oc.fillStyle = lighten(amph, 0.08); oc.fillRect(hx, 32, 6, 1)
+  }
+
+  // Food on counter top: bread + grapes + small vessel
+  oc.fillStyle = bread; oc.fillRect(14, 30, 6, 2)
+  oc.fillStyle = lighten(bread, 0.20); oc.fillRect(14, 30, 4, 1)
+  oc.fillStyle = darken(bread, 0.20); oc.fillRect(15, 31, 4, 1)
+  for (const [gx, gy] of [[24,29],[25,30],[26,29],[27,30],[23,30]]) {
+    oc.fillStyle = '#604898'; oc.fillRect(gx, gy, 2, 2)
+    oc.fillStyle = 'rgba(120,90,180,0.50)'; oc.fillRect(gx, gy, 1, 1)
+  }
+  oc.fillStyle = amph; oc.fillRect(33, 28, 4, 3); oc.fillRect(33, 27, 3, 2)
+  oc.fillStyle = lighten(amph, 0.12); oc.fillRect(33, 28, 2, 3)
+
+  // Two stacked amphorae right side rows 13–29
+  oc.fillStyle = amph
+  oc.fillRect(44, 13, 4, 9); oc.fillRect(44, 12, 3, 2); oc.fillRect(45, 22, 1, 2)
+  oc.fillStyle = lighten(amph, 0.12); oc.fillRect(44, 13, 2, 9)
+  oc.fillStyle = amphD; oc.fillRect(46, 13, 2, 9)
+  oc.fillStyle = darken(amph, 0.08)
+  oc.fillRect(44, 20, 4, 9); oc.fillRect(44, 19, 3, 2)
+  oc.fillStyle = lighten(amph, 0.08); oc.fillRect(44, 20, 2, 9)
+
+  // Plinth rows 45–49
+  oc.fillStyle = lighten(stLit, 0.16); oc.fillRect(0, 45, W, 1)
+  spriteBrickWall(oc, 0, 46, W, 4, stLit)
+  oc.fillStyle = stShd; oc.fillRect(48, 46, 4, 4)
+
+  // Steps rows 50–57 (4 steps)
+  for (let s = 0; s < 4; s++) {
+    const sy = 50 + s * 2
+    oc.fillStyle = lighten(stLit, 0.10 - s*0.04); oc.fillRect(0, sy, W, 1)
+    oc.fillStyle = darken(stLit, 0.10 + s*0.06); oc.fillRect(0, sy+1, W, 1)
+  }
+
+  return off
+}
+
+// ── Domus sprite (Roman townhouse) — 80×64 logical px → 160×128 screen px ──
+// Grand two-storey residence: wide gabled roof, 4 Ionic columns,
+// central triumphal arch entrance, flanking arched windows, Pompeian stucco.
+function buildDomusSpriteCanvas(_color) {
+  const W = 80, H = 64
+  const off = document.createElement('canvas')
+  off.width = W; off.height = H
+  const oc = off.getContext('2d')
+  const wLit  = '#ece4b8', wMid  = '#d8cc90', wShd  = '#b8a860'
+  const rLit  = '#c84020', rRidge = '#f07040'
+  const sLit  = '#c8ba88', sMid  = '#a8986c', sShd  = '#886844'
+  const cLit  = '#f4ecd0', cShd  = '#d0c098', cCap  = '#faf6ee'
+  const frz   = '#cc9a2c', gold  = '#d8a020'
+  const wDark = '#16100a', shut  = '#7c4c18'
+  const ambr1 = 'rgba(255,195,70,0.44)', ambr2 = 'rgba(255,230,130,0.55)'
+
+  // Gabled roof rows 0–12 (wide, stately)
+  for (let row = 0; row < 13; row++) {
+    const t = row / 12, halfW = Math.round(2 + t * 39), lx = 40 - halfW
+    const lr = Math.round(200-t*55), lg = Math.round(64-t*22), lb = Math.round(32-t*12)
+    const sr = Math.round(130-t*38), sg = Math.round(42-t*14), sb = Math.round(22-t*10)
+    oc.fillStyle = `rgb(${lr},${lg},${lb})`; oc.fillRect(lx, row, halfW, 1)
+    oc.fillStyle = `rgb(${sr},${sg},${sb})`; oc.fillRect(40, row, halfW, 1)
+    if (row > 0 && row % 2 === 0) { oc.fillStyle = 'rgba(0,0,0,0.11)'; oc.fillRect(lx, row, halfW*2, 1) }
+  }
+  oc.fillStyle = rRidge; oc.fillRect(38, 0, 5, 1)
+  oc.fillStyle = lighten(rRidge, 0.22); oc.fillRect(39, 0, 3, 1)
+  oc.fillStyle = darken(rLit, 0.20); oc.fillRect(0, 12, W, 1)
+  oc.fillStyle = lighten(sLit, 0.14); oc.fillRect(0, 13, W, 1)
+
+  // Frieze rows 14–15
+  oc.fillStyle = frz; oc.fillRect(0, 14, W, 2)
+  oc.fillStyle = lighten(frz, 0.26); oc.fillRect(0, 14, W, 1)
+  oc.fillStyle = darken(frz, 0.24)
+  for (let x = 4; x < W-3; x += 7) { oc.fillRect(x, 14, 4, 2); oc.fillRect(x+4, 15, 3, 1) }
+
+  // Upper floor rows 16–29 (4 windows with shutters)
+  spriteBrickWall(oc, 0, 16, W, 14, wLit)
+  oc.fillStyle = wShd; oc.fillRect(W-4, 16, 4, 14)
+  oc.fillStyle = lighten(wLit, 0.22); oc.fillRect(0, 16, 5, 14)
+  for (const [wx, ww] of [[6,9],[23,9],[48,9],[65,9]]) {
+    spriteWindow(oc, wx, 18, ww, 9, wDark)
+    oc.fillStyle = shut
+    oc.fillRect(wx-2, 18, 2, 9); oc.fillRect(wx+ww, 18, 2, 9)
+    oc.fillStyle = darken(shut, 0.24)
+    for (let sy = 19; sy < 27; sy += 2) { oc.fillRect(wx-2, sy, 2, 1); oc.fillRect(wx+ww, sy, 2, 1) }
+  }
+
+  // Belt course rows 30–31
+  oc.fillStyle = lighten(sMid, 0.10); oc.fillRect(0, 30, W, 1)
+  oc.fillStyle = darken(sMid, 0.14);  oc.fillRect(0, 31, W, 1)
+
+  // Lower floor rows 32–52
+  spriteBrickWall(oc, 0, 32, W, 21, wMid)
+  oc.fillStyle = wShd; oc.fillRect(W-4, 32, 4, 21)
+
+  // 4 Ionic columns
+  for (const [cx, lit] of [[2,true],[20,true],[56,false],[74,false]]) {
+    oc.fillStyle = cCap; oc.fillRect(cx-1, 32, 7, 1)
+    oc.fillStyle = lit ? cLit : cShd; oc.fillRect(cx-1, 33, 7, 2)
+    oc.fillStyle = lit ? cLit : cShd; oc.fillRect(cx, 35, 5, 13)
+    oc.fillStyle = 'rgba(255,255,255,0.18)'; oc.fillRect(cx, 35, 1, 13)
+    oc.fillStyle = 'rgba(0,0,0,0.22)'; oc.fillRect(cx+4, 35, 1, 13)
+    oc.fillStyle = lit ? sLit : sMid; oc.fillRect(cx-1, 48, 7, 3)
+    oc.fillStyle = darken(sMid, 0.14); oc.fillRect(cx-1, 50, 7, 1)
+  }
+
+  // Grand central arch entrance x=30, w=20
+  const aX = 30, aW = 20, aTop = 33
+  oc.fillStyle = lighten(frz, 0.10); oc.fillRect(aX-2, aTop-1, aW+4, 21)
+  oc.fillStyle = wDark
+  for (const [sx, sy, sw] of [
+    [aX+7, aTop, 6], [aX+4, aTop+1, 12], [aX+2, aTop+2, 16],
+    [aX+1, aTop+3, 18], [aX, aTop+4, 20],
+  ]) oc.fillRect(sx, sy, sw, 1)
+  oc.fillRect(aX, aTop+5, aW, 53-(aTop+5))
+  oc.fillStyle = ambr1; oc.fillRect(aX, aTop+5, aW, 53-(aTop+5))
+  oc.fillStyle = ambr2; oc.fillRect(aX+4, aTop+8, aW-8, 53-(aTop+8))
+  oc.fillStyle = gold; oc.fillRect(aX+7, aTop-1, 6, 3)
+  oc.fillStyle = lighten(gold, 0.28); oc.fillRect(aX+9, aTop-1, 2, 1)
+  oc.fillStyle = gold
+  oc.fillRect(aX+3, aTop+14, 2, 2); oc.fillRect(aX+aW-5, aTop+14, 2, 2)
+
+  // Flanking arched windows rows 35–49
+  for (const [wx, ww] of [[8,10],[62,10]]) {
+    spriteWindow(oc, wx, 36, ww, 12, wDark)
+    oc.fillStyle = shut
+    oc.fillRect(wx-1, 36, 1, 12); oc.fillRect(wx+ww, 36, 1, 12)
+    oc.fillStyle = darken(shut, 0.25)
+    for (let sy = 37; sy < 48; sy += 2) { oc.fillRect(wx-1, sy, 1, 1); oc.fillRect(wx+ww, sy, 1, 1) }
+  }
+
+  // Plinth rows 53–57
+  oc.fillStyle = lighten(sLit, 0.18); oc.fillRect(0, 53, W, 1)
+  spriteBrickWall(oc, 0, 54, W, 4, sLit)
+  oc.fillStyle = sShd; oc.fillRect(W-4, 54, 4, 4)
+
+  // Wide steps rows 58–63 (3 steps)
+  for (let s = 0; s < 3; s++) {
+    const sy = 58 + s * 2
+    oc.fillStyle = lighten(sMid, 0.12 - s*0.06); oc.fillRect(0, sy, W, 1)
+    oc.fillStyle = darken(sMid, 0.12 + s*0.08); oc.fillRect(0, sy+1, W, 1)
+  }
+
+  return off
+}
+
 // Bakery chimney smoke — drawn in world space inside world transform
 function drawSmoke2D(ctx, cx, topY, time) {
   for (let i = 0; i < 5; i++) {
@@ -783,8 +1093,11 @@ function getPixelSprite(id, color) {
   return pixelSpriteCache[key]
 }
 function buildPixelSprite(id, color) {
-  if (id === 'insula') return buildInsulaSpriteCanvas(color)
-  if (id === 'bakery')  return buildBakerySpriteCanvas(color)
+  if (id === 'insula')       return buildInsulaSpriteCanvas(color)
+  if (id === 'bakery')       return buildBakerySpriteCanvas(color)
+  if (id === 'taberna')      return buildTabernaSpriteCanvas(color)
+  if (id === 'thermopolium') return buildThermopoliumSpriteCanvas(color)
+  if (id === 'domus')        return buildDomusSpriteCanvas(color)
   return null
 }
 
@@ -1224,6 +1537,10 @@ function drawBuilding2D(ctx, b, streetOffsetX, groundY, isNew, onFire, time) {
     // Bakery chimney smoke: chimney at logical (63, 1) → world offset (+94, -sh+2)
     if (id === 'bakery') {
       drawSmoke2D(ctx, x - ox + 63 * PIXEL, groundY - sh + 2 * PIXEL, time)
+    }
+    // Thermopolium: gentle steam from dolia counter centre (logical x=26, y=31)
+    if (id === 'thermopolium') {
+      drawSmoke2D(ctx, x - ox + 26 * PIXEL, groundY - sh + 31 * PIXEL, time)
     }
     if (isNew)  drawSparkle2D(ctx, x + bw / 2, groundY - sh)
     if (onFire) drawFire2D(ctx, x + bw / 2, groundY - sh, sw, time)

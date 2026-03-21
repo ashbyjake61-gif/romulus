@@ -1,165 +1,139 @@
-<svg width="680" height="600" viewBox="0 0 680 600" xmlns="http://www.w3.org/2000/svg">
+<svg width="680" height="560" viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg">
 
-  <!-- ══ PLINTH — dressed stone base ══ -->
-  <polygon points="140,320 340,420 340,470 140,370" fill="#b4a472"/>
-  <polygon points="340,420 540,320 540,370 340,470" fill="#988858"/>
+<!-- PLINTH -->
+<polygon points="140,320 340,420 340,460 140,360" fill="#c8b47c"/>
+<polygon points="340,420 540,320 540,360 340,460" fill="#7a6838"/>
 
-  <!-- ══ LEFT WALL — lit stucco ══ -->
-  <polygon points="140,158 340,258 340,420 140,320" fill="#ddd0a0"/>
+<!-- LEFT WALL (lit) -->
+<polygon points="140,158 340,258 340,420 140,320" fill="#efe3b8"/>
 
-  <!-- ══ RIGHT WALL — shaded stucco ══ -->
-  <polygon points="340,258 540,158 540,320 340,420" fill="#c0b080"/>
+<!-- RIGHT WALL (shadow) -->
+<polygon points="340,258 540,158 540,320 340,420" fill="#a89060"/>
 
-  <!-- ══ FRIEZE / CORNICE ══ -->
-  <polygon points="140,130 340,230 340,258 140,158" fill="#c8b868"/>
-  <polygon points="340,230 540,130 540,158 340,258" fill="#b0a048"/>
-  <!-- Dentil ticks -->
-  <line x1="162" y1="145" x2="162" y2="156" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="184" y1="152" x2="184" y2="163" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="206" y1="159" x2="206" y2="170" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="228" y1="166" x2="228" y2="177" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="250" y1="173" x2="250" y2="184" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="272" y1="180" x2="272" y2="191" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="294" y1="187" x2="294" y2="198" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="316" y1="194" x2="316" y2="205" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-  <line x1="364" y1="245" x2="364" y2="234" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
-  <line x1="386" y1="238" x2="386" y2="227" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
-  <line x1="408" y1="231" x2="408" y2="220" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
-  <line x1="430" y1="224" x2="430" y2="213" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
-  <line x1="452" y1="217" x2="452" y2="206" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
-  <line x1="474" y1="210" x2="474" y2="199" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
-  <line x1="496" y1="203" x2="496" y2="192" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
-  <line x1="518" y1="196" x2="518" y2="185" stroke="rgba(0,0,0,0.15)" stroke-width="2"/>
+<!-- FRIEZE -->
+<polygon points="140,130 340,230 340,258 140,158" fill="#d4bc5c"/>
+<polygon points="340,230 540,130 540,158 340,258" fill="#988434"/>
+<!-- Dentils left -->
+<line x1="162" y1="144" x2="162" y2="155" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<line x1="183" y1="151" x2="183" y2="162" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<line x1="204" y1="158" x2="204" y2="169" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<line x1="225" y1="165" x2="225" y2="176" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<line x1="246" y1="172" x2="246" y2="183" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<line x1="267" y1="179" x2="267" y2="190" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<line x1="288" y1="186" x2="288" y2="197" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<line x1="309" y1="193" x2="309" y2="204" stroke="rgba(0,0,0,0.20)" stroke-width="2"/>
+<!-- Dentils right -->
+<line x1="362" y1="245" x2="362" y2="234" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
+<line x1="383" y1="238" x2="383" y2="227" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
+<line x1="404" y1="231" x2="404" y2="220" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
+<line x1="425" y1="224" x2="425" y2="213" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
+<line x1="446" y1="217" x2="446" y2="206" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
+<line x1="467" y1="210" x2="467" y2="199" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
+<line x1="488" y1="203" x2="488" y2="192" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
+<line x1="509" y1="196" x2="509" y2="185" stroke="rgba(0,0,0,0.14)" stroke-width="2"/>
 
-  <!-- ══ WINDOW — left wall ══ -->
-  <polygon points="175,260 219,282 219,222 175,200" fill="none" stroke="#9a8040" stroke-width="4"/>
-  <polygon points="180,257 214,275 214,227 180,209" fill="#1a0c06"/>
-  <line x1="197" y1="211" x2="197" y2="273" stroke="#4a2c10" stroke-width="1.5"/>
-  <line x1="180" y1="243" x2="214" y2="261" stroke="#4a2c10" stroke-width="1.5"/>
-  <polygon points="172,198 222,222 222,229 172,205" fill="#c8b868"/>
+<!-- WINDOW -->
+<polygon points="174,204 222,226 222,282 174,260" fill="none" stroke="#9a7e30" stroke-width="3.5" stroke-linejoin="round"/>
+<polygon points="180,208 216,228 216,276 180,256" fill="#160a04"/>
+<line x1="198" y1="210" x2="198" y2="274" stroke="#3e2808" stroke-width="1.5"/>
+<line x1="180" y1="242" x2="216" y2="262" stroke="#3e2808" stroke-width="1.5"/>
+<polygon points="171,200 225,224 225,232 171,208" fill="#d4bc5c"/>
 
-  <!-- ══ DOOR — right wall, arched ══ -->
-  <polygon points="402,432 458,408 458,302 402,326" fill="#c8b868"/>
-  <path d="M 409,428 L 451,408 L 451,348
-           Q 451,312 430,305
-           Q 409,312 409,348 Z" fill="#1a0c06"/>
-  <path d="M 409,348 Q 409,312 430,305 Q 451,312 451,348"
-        fill="none" stroke="#9a8040" stroke-width="1.5"/>
-  <polygon points="425,305 435,305 437,316 423,316" fill="#d4c078"/>
-  <line x1="430" y1="410" x2="430" y2="358" stroke="#2a1808" stroke-width="1" opacity="0.5"/>
-  <circle cx="443" cy="386" r="3" fill="none" stroke="#7a6030" stroke-width="1.5"/>
+<!-- DOOR -->
+<polygon points="403,432 456,410 456,298 403,320" fill="#d4bc5c"/>
+<path d="M 410,428 L 452,408 L 452,346 Q 452,310 431,303 Q 410,310 410,346 Z" fill="#160a04"/>
+<path d="M 410,346 Q 410,310 431,303 Q 452,310 452,346" fill="none" stroke="#9a7e30" stroke-width="1.5"/>
+<polygon points="426,303 436,303 438,315 424,315" fill="#f0d870"/>
+<line x1="431" y1="410" x2="431" y2="356" stroke="#1e1008" stroke-width="1" opacity="0.5"/>
+<circle cx="444" cy="386" r="3" fill="none" stroke="#8a6828" stroke-width="1.5"/>
 
-  <!-- ══ CORNER PILASTERS ══ -->
-  <polygon points="140,130 157,139 157,370 140,370" fill="#ede0b8"/>
-  <polygon points="322,222 340,230 340,470 322,462" fill="#ede0b8"/>
-  <polygon points="340,230 358,222 358,462 340,470" fill="#d0c090"/>
-  <polygon points="523,139 540,130 540,370 523,370" fill="#cec088"/>
-  <line x1="140" y1="130" x2="157" y2="139" stroke="#a08840" stroke-width="2"/>
-  <line x1="322" y1="222" x2="340" y2="230" stroke="#a08840" stroke-width="2"/>
-  <line x1="340" y1="230" x2="358" y2="222" stroke="#887030" stroke-width="2"/>
-  <line x1="523" y1="139" x2="540" y2="130" stroke="#887030" stroke-width="2"/>
-  <line x1="140" y1="370" x2="157" y2="370" stroke="#a08840" stroke-width="1.5"/>
-  <line x1="322" y1="462" x2="340" y2="470" stroke="#a08840" stroke-width="1.5"/>
-  <line x1="340" y1="470" x2="358" y2="462" stroke="#887030" stroke-width="1.5"/>
-  <line x1="523" y1="370" x2="540" y2="370" stroke="#887030" stroke-width="1.5"/>
+<!-- PILASTERS -->
+<polygon points="140,130 157,138 157,360 140,360" fill="#faf2d8"/>
+<polygon points="322,222 340,230 340,460 322,452" fill="#faf2d8"/>
+<polygon points="340,230 358,222 358,452 340,460" fill="#c0a86c"/>
+<polygon points="522,138 540,130 540,360 522,360" fill="#c0a86c"/>
+<line x1="140" y1="130" x2="157" y2="138" stroke="#b09040" stroke-width="2"/>
+<line x1="322" y1="222" x2="340" y2="230" stroke="#b09040" stroke-width="2"/>
+<line x1="340" y1="230" x2="358" y2="222" stroke="#907030" stroke-width="2"/>
+<line x1="522" y1="138" x2="540" y2="130" stroke="#907030" stroke-width="2"/>
+<line x1="140" y1="360" x2="157" y2="360" stroke="#908040" stroke-width="1.5"/>
+<line x1="322" y1="452" x2="340" y2="460" stroke="#908040" stroke-width="1.5"/>
+<line x1="340" y1="460" x2="358" y2="452" stroke="#706830" stroke-width="1.5"/>
+<line x1="522" y1="360" x2="540" y2="360" stroke="#706830" stroke-width="1.5"/>
 
-  <!-- ══ CLIMBING VINE — left corner pilaster ══ -->
-  <!-- Main stem winding up the left-edge pilaster -->
-  <path d="M 150,366 C 144,345 156,322 148,298 C 141,276 155,254 148,230 C 142,210 152,188 150,165 C 148,152 151,142 153,134"
-        fill="none" stroke="#3d6818" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Side tendril mid-wall -->
-  <path d="M 149,298 C 162,292 174,286 178,278"
-        fill="none" stroke="#3d6818" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M 149,230 C 163,226 172,218 168,210"
-        fill="none" stroke="#3d6818" stroke-width="1.5" stroke-linecap="round"/>
-  <!-- Leaves — clusters of ellipses at intervals -->
-  <ellipse cx="146" cy="354" rx="9" ry="5"  fill="#4e8820" transform="rotate(-30 146 354)"/>
-  <ellipse cx="154" cy="349" rx="7" ry="4"  fill="#62a828" transform="rotate(15 154 349)"/>
-  <ellipse cx="144" cy="330" rx="8" ry="5"  fill="#5a9820" transform="rotate(20 144 330)"/>
-  <ellipse cx="155" cy="325" rx="6" ry="4"  fill="#72b832" transform="rotate(-10 155 325)"/>
-  <ellipse cx="146" cy="306" rx="9" ry="5"  fill="#4e8820" transform="rotate(-25 146 306)"/>
-  <ellipse cx="156" cy="300" rx="7" ry="4"  fill="#62a828" transform="rotate(18 156 300)"/>
-  <!-- Tendril leaves -->
-  <ellipse cx="174" cy="282" rx="7" ry="4"  fill="#5a9820" transform="rotate(35 174 282)"/>
-  <ellipse cx="180" cy="276" rx="6" ry="4"  fill="#72b832" transform="rotate(-20 180 276)"/>
-  <ellipse cx="147" cy="284" rx="8" ry="5"  fill="#4e8820" transform="rotate(10 147 284)"/>
-  <ellipse cx="150" cy="258" rx="8" ry="5"  fill="#62a828" transform="rotate(-18 150 258)"/>
-  <ellipse cx="143" cy="238" rx="7" ry="4"  fill="#5a9820" transform="rotate(22 143 238)"/>
-  <!-- Upper tendril leaves -->
-  <ellipse cx="166" cy="214" rx="7" ry="4"  fill="#72b832" transform="rotate(-30 166 214)"/>
-  <ellipse cx="172" cy="208" rx="5" ry="3"  fill="#62a828" transform="rotate(10 172 208)"/>
-  <ellipse cx="149" cy="218" rx="7" ry="4"  fill="#4e8820" transform="rotate(15 149 218)"/>
-  <ellipse cx="151" cy="195" rx="6" ry="3.5" fill="#5a9820" transform="rotate(-12 151 195)"/>
-  <ellipse cx="153" cy="172" rx="7" ry="4"  fill="#62a828" transform="rotate(25 153 172)"/>
-  <ellipse cx="145" cy="165" rx="6" ry="3.5" fill="#4e8820" transform="rotate(-20 145 165)"/>
-  <!-- A few tiny berries / buds for character -->
-  <circle cx="148" cy="345" r="2"  fill="#8a3838" opacity="0.8"/>
-  <circle cx="155" cy="292" r="1.8" fill="#8a3838" opacity="0.8"/>
-  <circle cx="152" cy="242" r="2"  fill="#8a3838" opacity="0.7"/>
+<!-- CLIMBING VINE -->
+<path d="M 150,356 C 144,334 157,312 148,288 C 140,265 155,243 148,220 C 141,198 153,177 149,154 C 146,141 150,133 152,129"
+      fill="none" stroke="#3a6016" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 149,288 C 162,282 174,274 178,266" fill="none" stroke="#3a6016" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M 148,222 C 161,218 170,210 167,202" fill="none" stroke="#3a6016" stroke-width="1.5" stroke-linecap="round"/>
+<ellipse cx="146" cy="344" rx="9"   ry="5.5" fill="#4c8620" transform="rotate(-28 146 344)"/>
+<ellipse cx="154" cy="339" rx="7"   ry="4"   fill="#60a02c" transform="rotate(14 154 339)"/>
+<ellipse cx="144" cy="320" rx="8"   ry="5"   fill="#5a9620" transform="rotate(22 144 320)"/>
+<ellipse cx="153" cy="315" rx="6"   ry="3.5" fill="#70b030" transform="rotate(-10 153 315)"/>
+<ellipse cx="146" cy="296" rx="9"   ry="5.5" fill="#4c8620" transform="rotate(-24 146 296)"/>
+<ellipse cx="155" cy="290" rx="6.5" ry="4"   fill="#60a02c" transform="rotate(18 155 290)"/>
+<ellipse cx="173" cy="270" rx="7"   ry="4"   fill="#5a9620" transform="rotate(34 173 270)"/>
+<ellipse cx="179" cy="264" rx="5.5" ry="3.5" fill="#70b030" transform="rotate(-18 179 264)"/>
+<ellipse cx="146" cy="276" rx="8"   ry="4.5" fill="#4c8620" transform="rotate(10 146 276)"/>
+<ellipse cx="149" cy="250" rx="7.5" ry="4.5" fill="#60a02c" transform="rotate(-17 149 250)"/>
+<ellipse cx="143" cy="230" rx="7"   ry="4"   fill="#5a9620" transform="rotate(21 143 230)"/>
+<ellipse cx="164" cy="207" rx="6.5" ry="4"   fill="#70b030" transform="rotate(-28 164 207)"/>
+<ellipse cx="170" cy="201" rx="5"   ry="3"   fill="#60a02c" transform="rotate(12 170 201)"/>
+<ellipse cx="148" cy="210" rx="7"   ry="4"   fill="#4c8620" transform="rotate(15 148 210)"/>
+<ellipse cx="150" cy="188" rx="6"   ry="3.5" fill="#5a9620" transform="rotate(-12 150 188)"/>
+<ellipse cx="152" cy="166" rx="6.5" ry="3.5" fill="#60a02c" transform="rotate(24 152 166)"/>
+<ellipse cx="145" cy="158" rx="5.5" ry="3"   fill="#4c8620" transform="rotate(-19 145 158)"/>
+<circle cx="148" cy="335" r="2"   fill="#8a3030" opacity="0.85"/>
+<circle cx="155" cy="282" r="1.8" fill="#8a3030" opacity="0.80"/>
+<circle cx="151" cy="234" r="2"   fill="#8a3030" opacity="0.75"/>
 
-  <!-- ══ DOORSTEP POTS ══ -->
-  <!-- Left pot (front-left of door) -->
-  <!-- Pot body -->
-  <path d="M 393,441 Q 393,451 401,453 Q 409,451 409,441 L 407,434 L 395,434 Z" fill="#b05828"/>
-  <!-- Pot rim -->
-  <ellipse cx="401" cy="434" rx="8" ry="3.5" fill="#c86838"/>
-  <!-- Soil top -->
-  <ellipse cx="401" cy="433" rx="6" ry="2.5" fill="#6a4820"/>
-  <!-- Plant foliage (olive/bay bush) -->
-  <ellipse cx="401" cy="422" rx="11" ry="8"  fill="#4a8020"/>
-  <ellipse cx="394" cy="419" rx="8"  ry="6"  fill="#5a9828"/>
-  <ellipse cx="408" cy="418" rx="9"  ry="6"  fill="#3e7018"/>
-  <ellipse cx="401" cy="415" rx="7"  ry="5"  fill="#62a82c"/>
-  <!-- A small flower or two -->
-  <circle cx="397" cy="413" r="2"  fill="#f0e060" opacity="0.9"/>
-  <circle cx="406" cy="416" r="1.8" fill="#f0e060" opacity="0.9"/>
+<!-- DOORSTEP POTS -->
+<path d="M 392,440 Q 392,451 401,453 Q 410,451 410,440 L 408,433 L 394,433 Z" fill="#aa5224"/>
+<ellipse cx="401" cy="433" rx="8.5" ry="3.5" fill="#c46234"/>
+<ellipse cx="401" cy="432" rx="6.5" ry="2.5" fill="#644018"/>
+<ellipse cx="401" cy="420" rx="11"  ry="8"   fill="#488018"/>
+<ellipse cx="394" cy="417" rx="8"   ry="6"   fill="#58982a"/>
+<ellipse cx="408" cy="416" rx="9"   ry="6"   fill="#3c6c14"/>
+<ellipse cx="401" cy="413" rx="7"   ry="5"   fill="#62a82c"/>
+<circle cx="397" cy="411" r="2.2"  fill="#f0e060" opacity="0.9"/>
+<circle cx="406" cy="414" r="1.8"  fill="#f0e060" opacity="0.9"/>
+<path d="M 452,421 Q 452,432 461,434 Q 470,432 470,421 L 468,414 L 454,414 Z" fill="#aa5224"/>
+<ellipse cx="461" cy="414" rx="8.5" ry="3.5" fill="#c46234"/>
+<ellipse cx="461" cy="413" rx="6.5" ry="2.5" fill="#644018"/>
+<ellipse cx="461" cy="401" rx="11"  ry="8"   fill="#488018"/>
+<ellipse cx="454" cy="398" rx="8"   ry="6"   fill="#58982a"/>
+<ellipse cx="468" cy="397" rx="9"   ry="6"   fill="#3c6c14"/>
+<ellipse cx="461" cy="394" rx="7"   ry="5"   fill="#62a82c"/>
+<circle cx="457" cy="392" r="2.2"  fill="#f0d050" opacity="0.9"/>
+<circle cx="465" cy="395" r="1.8"  fill="#f0e060" opacity="0.9"/>
 
-  <!-- Right pot (front-right of door) -->
-  <path d="M 453,421 Q 453,431 461,433 Q 469,431 469,421 L 467,414 L 455,414 Z" fill="#b05828"/>
-  <ellipse cx="461" cy="414" rx="8" ry="3.5" fill="#c86838"/>
-  <ellipse cx="461" cy="413" rx="6" ry="2.5" fill="#6a4820"/>
-  <!-- Plant foliage -->
-  <ellipse cx="461" cy="402" rx="11" ry="8"  fill="#4a8020"/>
-  <ellipse cx="454" cy="399" rx="8"  ry="6"  fill="#5a9828"/>
-  <ellipse cx="468" cy="398" rx="9"  ry="6"  fill="#3e7018"/>
-  <ellipse cx="461" cy="395" rx="7"  ry="5"  fill="#62a82c"/>
-  <circle cx="457" cy="393" r="2"  fill="#f0d050" opacity="0.9"/>
-  <circle cx="465" cy="396" r="1.8" fill="#f0e060" opacity="0.9"/>
+<!-- HIP ROOF -->
+<polygon points="340,230 140,130 340,28" fill="#d85a2c"/>
+<polygon points="340,230 540,130 340,28" fill="#782210"/>
+<polygon points="140,130 340,28 340,35"  fill="#9c3014"/>
+<polygon points="540,130 340,28 340,35"  fill="#260a04"/>
+<!-- Eave fascia -->
+<polygon points="340,230 140,130 133,134 337,236" fill="#b84820"/>
+<polygon points="340,230 540,130 547,134 343,236" fill="#4c1408"/>
+<!-- Tile courses lit -->
+<line x1="180" y1="148" x2="338" y2="30"  stroke="rgba(0,0,0,0.13)" stroke-width="1.5"/>
+<line x1="220" y1="166" x2="338" y2="38"  stroke="rgba(0,0,0,0.11)" stroke-width="1.5"/>
+<line x1="263" y1="185" x2="339" y2="52"  stroke="rgba(0,0,0,0.09)" stroke-width="1.5"/>
+<line x1="305" y1="204" x2="340" y2="76"  stroke="rgba(0,0,0,0.07)" stroke-width="1"/>
+<!-- Tile courses shade -->
+<line x1="500" y1="148" x2="342" y2="30"  stroke="rgba(0,0,0,0.08)" stroke-width="1.5"/>
+<line x1="460" y1="166" x2="342" y2="38"  stroke="rgba(0,0,0,0.06)" stroke-width="1.5"/>
+<line x1="417" y1="185" x2="341" y2="52"  stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
+<!-- Ridge -->
+<line x1="140" y1="130" x2="340" y2="28" stroke="#f07848" stroke-width="3.5"/>
+<line x1="540" y1="130" x2="340" y2="28" stroke="#9c3014" stroke-width="3"/>
+<polygon points="332,24 348,24 344,34 336,34" fill="#e86030"/>
 
-  <!-- ══ HIP ROOF — tall pitch, terracotta ══ -->
-  <polygon points="340,230 140,130 340,28" fill="#c04828"/>
-  <polygon points="340,230 540,130 340,28" fill="#8c3018"/>
-  <polygon points="140,130 340,28 340,36" fill="#a83820"/>
-  <polygon points="540,130 340,28 340,36" fill="#6c2810"/>
-  <!-- Eave fascia -->
-  <polygon points="340,230 140,130 134,135 338,236" fill="#a03820"/>
-  <polygon points="340,230 540,130 546,135 342,236" fill="#702810"/>
-  <!-- Tile courses — left face -->
-  <line x1="182" y1="149" x2="338" y2="32"  stroke="rgba(0,0,0,0.14)" stroke-width="1.5"/>
-  <line x1="224" y1="168" x2="339" y2="40"  stroke="rgba(0,0,0,0.13)" stroke-width="1.5"/>
-  <line x1="266" y1="187" x2="340" y2="54"  stroke="rgba(0,0,0,0.11)" stroke-width="1.5"/>
-  <line x1="308" y1="206" x2="340" y2="80"  stroke="rgba(0,0,0,0.09)" stroke-width="1"/>
-  <!-- Tile courses — right face -->
-  <line x1="498" y1="149" x2="342" y2="32"  stroke="rgba(0,0,0,0.10)" stroke-width="1.5"/>
-  <line x1="456" y1="168" x2="341" y2="40"  stroke="rgba(0,0,0,0.09)" stroke-width="1.5"/>
-  <line x1="414" y1="187" x2="340" y2="54"  stroke="rgba(0,0,0,0.07)" stroke-width="1"/>
-  <line x1="372" y1="206" x2="340" y2="80"  stroke="rgba(0,0,0,0.05)" stroke-width="1"/>
-  <!-- Ridge beam -->
-  <line x1="140" y1="130" x2="340" y2="28" stroke="#e06030" stroke-width="3.5"/>
-  <line x1="540" y1="130" x2="340" y2="28" stroke="#a84020" stroke-width="3"/>
-  <polygon points="332,24 348,24 344,34 336,34" fill="#d85028"/>
-
-  <!-- ══ OUTLINES ══ -->
-  <polygon points="340,28 140,130 140,370 340,470 540,370 540,130 340,28"
-           fill="none" stroke="#1A0A00" stroke-width="1.5" stroke-linejoin="miter"/>
-  <line x1="340" y1="230" x2="340" y2="470" stroke="#1A0A00" stroke-width="1.5"/>
-  <line x1="140" y1="130" x2="340" y2="230" stroke="#1A0A00" stroke-width="1.5"/>
-  <line x1="340" y1="230" x2="540" y2="130" stroke="#1A0A00" stroke-width="1.5"/>
-  <line x1="340" y1="28"  x2="140" y2="130" stroke="#1A0A00" stroke-width="1.5"/>
-  <line x1="340" y1="28"  x2="540" y2="130" stroke="#1A0A00" stroke-width="1.5"/>
-  <line x1="140" y1="320" x2="340" y2="420" stroke="#1A0A00" stroke-width="0.8" opacity="0.45"/>
-  <line x1="340" y1="420" x2="540" y2="320" stroke="#1A0A00" stroke-width="0.8" opacity="0.45"/>
-  <line x1="140" y1="158" x2="340" y2="258" stroke="#1A0A00" stroke-width="0.8" opacity="0.45"/>
-  <line x1="340" y1="258" x2="540" y2="158" stroke="#1A0A00" stroke-width="0.8" opacity="0.45"/>
+<!-- OUTLINES -->
+<polygon points="340,28 140,130 140,360 340,460 540,360 540,130 340,28"
+         fill="none" stroke="#1A0A00" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="340" y1="230" x2="340" y2="460" stroke="#1A0A00" stroke-width="0.8" opacity="0.5"/>
+<line x1="140" y1="130" x2="340" y2="230" stroke="#1A0A00" stroke-width="0.8" opacity="0.4"/>
+<line x1="340" y1="230" x2="540" y2="130" stroke="#1A0A00" stroke-width="0.8" opacity="0.4"/>
 
 </svg>

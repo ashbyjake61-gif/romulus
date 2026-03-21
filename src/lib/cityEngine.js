@@ -142,12 +142,18 @@ export function buildCityLayout(sessions, totalHours) {
   // Place buildings in sessions
   let placed = 0
   for (let i = 0; i < sessions && placed < sessions; i++) {
-    // First building is always an insula, second always a bakery (to the right)
+    // Fixed starter sequence: insula → bakery → taberna → thermopolium → domus
     let btype
     if (i === 0) {
       btype = BUILDING_TYPES.find(t => t.id === 'insula')
     } else if (i === 1) {
       btype = BUILDING_TYPES.find(t => t.id === 'bakery')
+    } else if (i === 2) {
+      btype = BUILDING_TYPES.find(t => t.id === 'taberna')
+    } else if (i === 3) {
+      btype = BUILDING_TYPES.find(t => t.id === 'thermopolium')
+    } else if (i === 4) {
+      btype = BUILDING_TYPES.find(t => t.id === 'domus')
     } else {
       const progress = i / Math.max(sessions, 1)
       const availableTypes = BUILDING_TYPES.filter(t => {
