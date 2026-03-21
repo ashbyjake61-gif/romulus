@@ -398,56 +398,50 @@ function drawTree2D(ctx, tx, groundY, height, seed) {
   ctx.fill()
 }
 
-// Terraria-style blocky pixel bush — rectangular blocks stacked into lumpy domes
+// Terraria-style blocky pixel bush — exactly 3 rounded lumps, solid square blocks
 function drawShrub2D(ctx, x, groundY, seed) {
-  const BS     = 4                              // block size in world px (= 4 screen px at zoom 1)
-  const nLumps = 2 + Math.floor(seed * 2)      // 2–3 lumps
-  const nCols  = 8 + Math.floor(seed * 7)      // 8–14 block columns wide
-  const peakH  = 4 + Math.floor(seed * 3)      // 4–6 blocks tall at lump peak
+  const BS = 6  // block size in world px (6 screen px per block)
 
-  // Build column height map from overlapping dome curves + noise jitter
-  const heights = []
-  for (let c = 0; c < nCols; c++) {
-    const cx = c / (nCols - 1)
-    let h = 0
-    for (let l = 0; l < nLumps; l++) {
-      const lc   = (l + 0.5) / nLumps
-      const dist = Math.abs(cx - lc) * nLumps
-      h = Math.max(h, peakH * Math.max(0, 1 - dist * dist * 0.85))
-    }
-    // Slight noise jitter on the top silhouette
-    h += (tileNoise(c * 3.1 + seed * 17, seed * 8.3) - 0.5) * 1.4
-    heights.push(Math.max(1, Math.round(h)))
-  }
+  // Fixed 3-lump height profile — valley dips between each lump create distinct bumps
+  // Seed scales the whole bush up/down slightly and shifts the valley depths
+  const scale  = 0.85 + seed * 0.35
+  const BASE   = [1, 2, 3, 4, 3, 2, 2, 3, 5, 4, 3, 2, 2, 3, 4, 3, 1]
+  const nCols  = BASE.length
+  const heights = BASE.map((h, c) => {
+    const jitter = (tileNoise(c * 2.9 + seed * 11, seed * 7.3) - 0.5) * 0.6
+    return Math.max(1, Math.round((h + jitter) * scale))
+  })
 
-  const startX = x - (nCols * BS) / 2  // center bush on x
+  const maxH   = Math.max(...heights)
+  const startX = x - (nCols * BS) / 2
+
+  // 5-colour palette sampled from reference image
+  const C_DARK  = '#1c4808'   // base / shadow
+  const C_MID   = '#2d600e'   // lower body
+  const C_UPPER = '#3d7c1a'   // upper body
+  const C_TOP   = '#4e9c24'   // top of lumps
+  const C_HI    = '#5cb82c'   // highlight (upper-left of each lump peak)
 
   for (let c = 0; c < nCols; c++) {
     const h  = heights[c]
     const bx = startX + c * BS
-    const isEdge = c < 2 || c >= nCols - 2
+    const isLeftSide = c < nCols * 0.45   // left half gets highlight
 
     for (let row = 0; row < h; row++) {
-      const by      = groundY - (row + 1) * BS
-      const isTop   = row === h - 1
-      const topFrac = row / Math.max(h - 1, 1)  // 0=bottom row, 1=top row
+      const by     = groundY - (row + 1) * BS
+      const isTop  = row === h - 1
+      const isBase = row === 0
+      const frac   = row / Math.max(h - 1, 1)   // 0 = base, 1 = top
 
       let color
-      if (isEdge && row === 0)             color = '#1c4a08'  // dark corner base
-      else if (isEdge)                     color = '#245c0c'  // dark side
-      else if (isTop && c < nCols * 0.38) color = '#5ab828'  // bright highlight (upper-left lumps)
-      else if (isTop)                      color = '#46961e'  // standard top
-      else if (topFrac > 0.52)             color = '#3a7c1c'  // upper-mid
-      else                                 color = '#2d6614'  // lower body
+      if (isBase || c === 0 || c === nCols - 1) color = C_DARK
+      else if (isTop && isLeftSide)              color = C_HI
+      else if (isTop)                            color = C_TOP
+      else if (frac > 0.55)                      color = C_UPPER
+      else                                       color = C_MID
 
       ctx.fillStyle = color
       ctx.fillRect(bx, by, BS, BS)
-
-      // Small highlight pixel in upper-left corner of top blocks (Terraria look)
-      if (isTop && !isEdge) {
-        ctx.fillStyle = 'rgba(160,255,80,0.22)'
-        ctx.fillRect(bx, by, 2, 2)
-      }
     }
   }
 }
