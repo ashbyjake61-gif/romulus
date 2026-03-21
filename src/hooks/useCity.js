@@ -72,8 +72,11 @@ export function useCity(user) {
   const totalSessions = cityState.totalSessions
   const denarii = Math.max(0, cityState.totalMinutes - (cityState.spentDenarii || 0))
 
+  // Dev preview: ?preview=N forces at least N sessions in the layout (display only)
+  const previewSessions = Number(new URLSearchParams(window.location.search).get('preview') || 0)
+
   useEffect(() => {
-    const rawLayout = buildCityLayout(cityState.totalSessions, totalHours)
+    const rawLayout = buildCityLayout(Math.max(cityState.totalSessions, previewSessions), totalHours)
 
     // Apply saved relocations to auto-placed and landmark buildings
     const layout = rawLayout.map(b => {
