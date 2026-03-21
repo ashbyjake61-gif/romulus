@@ -285,69 +285,186 @@ function spriteLantern(oc, x, y) {
 }
 
 // ── Insula sprite 40×44 — double-detail at PIXEL=2 ───────────
-function buildInsulaSpriteCanvas(color) {
-  const W = 40, H = 44
+// Roman villa sprite — 60×64 logical px → 120×128 screen px at PIXEL=2
+// Historically accurate: terracotta roof, Ionic columns, grand triumphal arch
+// entrance, painted stucco walls, arched windows with wooden shutters,
+// stone plinth + wide steps. CK3-inspired richness and depth.
+function buildInsulaSpriteCanvas(_color) {
+  const W = 60, H = 64
   const off = document.createElement('canvas')
   off.width = W; off.height = H
-  const oc  = off.getContext('2d')
-  const frz  = lighten(color, 0.28)
-  const wDk  = darken(color, 0.14)
-  const wDp  = darken(color, 0.34)
-  const base = darken(color, 0.24)
-  const dark = '#1a0804'
+  const oc = off.getContext('2d')
 
-  // ── Gabled roof (rows 0–9) ──
-  for (let row = 0; row < 10; row++) {
-    const t     = row / 9
-    const halfW = Math.round((row / 9) * 20)
-    const lx    = 20 - halfW
-    const lr    = Math.round(208 - t * 64), lg = Math.round(72  - t * 24), lb = Math.round(40 - t * 14)
-    const sr    = Math.round(140 - t * 44), sg = Math.round(46  - t * 16), sb = Math.round(26 - t * 10)
+  // ── Palette (Pompeii / Roman fresco colours) ──────────────
+  const wLit   = '#e8d498'   // stucco, lit face (warm ochre)
+  const wMid   = '#d4bc7c'   // stucco, mid tone
+  const wShd   = '#c0a25c'   // stucco, shadow side
+  const frz    = '#c8a43c'   // golden frieze
+  const rLit   = '#c84020'   // terracotta, lit
+  const rRidge = '#f07040'   // terracotta ridge (brightest)
+  const sLit   = '#c0b080'   // stone, lit
+  const sMid   = '#a89868'   // stone, mid
+  const sShd   = '#887850'   // stone, shadow
+  const cLit   = '#f4ecd8'   // column shaft, lit (near-white)
+  const cShd   = '#d8cca8'   // column shaft, shadow
+  const cCap   = '#faf6ee'   // column capital highlight
+  const wDark  = '#16100a'   // window / arch interior
+  const gold   = '#d8a828'   // gold accents (keystone, rings)
+  const shut   = '#7c4c1c'   // wooden shutters (Roman oak)
+  const ambr1  = 'rgba(255,195,70,0.44)'   // arch glow outer
+  const ambr2  = 'rgba(255,230,130,0.58)'  // arch glow mid
+  const ambr3  = 'rgba(255,248,190,0.38)'  // arch glow inner
+
+  // ── ACROTERION rows 0–1 (ornamental apex finial) ───────────
+  oc.fillStyle = rRidge
+  oc.fillRect(27, 0, 6, 1)
+  oc.fillStyle = '#f0d080'
+  oc.fillRect(28, 1, 4, 1)
+
+  // ── GABLED ROOF rows 2–13 ──────────────────────────────────
+  // Lit left face, deep-shadow right face, tile courses every 2 rows
+  for (let row = 0; row < 12; row++) {
+    const t     = row / 11
+    const halfW = Math.round(1 + t * 29)
+    const lx    = 30 - halfW
+    const lr = Math.round(200 - t * 56), lg = Math.round(64 - t * 22), lb = Math.round(32 - t * 12)
+    const sr = Math.round(132 - t * 40), sg = Math.round(44 - t * 16), sb = Math.round(22 - t * 10)
     oc.fillStyle = `rgb(${lr},${lg},${lb})`
-    oc.fillRect(lx, row, halfW, 1)
+    oc.fillRect(lx, row + 2, halfW, 1)
     oc.fillStyle = `rgb(${sr},${sg},${sb})`
-    oc.fillRect(20, row, halfW, 1)
+    oc.fillRect(30, row + 2, halfW, 1)
     if (row > 0 && row % 2 === 0 && halfW > 1) {
-      oc.fillStyle = 'rgba(0,0,0,0.15)'
-      oc.fillRect(lx, row, halfW * 2, 1)
+      oc.fillStyle = 'rgba(0,0,0,0.12)'
+      oc.fillRect(lx, row + 2, halfW * 2, 1)
     }
   }
-  oc.fillStyle = '#f07840'; oc.fillRect(19, 0, 2, 1)
-  oc.fillStyle = '#952c10'; oc.fillRect(0,  9, W, 1)  // eave
+  oc.fillStyle = rRidge; oc.fillRect(28, 2, 4, 1)
+  oc.fillStyle = lighten(rRidge, 0.22); oc.fillRect(29, 2, 2, 1)
+  // Eave overhang
+  oc.fillStyle = darken(rLit, 0.22); oc.fillRect(0, 13, W, 1)
+  oc.fillStyle = lighten(sLit, 0.16); oc.fillRect(0, 14, W, 1)
 
-  // ── Frieze (rows 10–11) ──
-  oc.fillStyle = frz
-  oc.fillRect(0, 10, W, 2)
-  oc.fillStyle = darken(frz, 0.24)
-  for (let x = 2; x < W - 2; x += 5) oc.fillRect(x, 10, 2, 2)
+  // ── FRIEZE rows 15–16 (dentillated cornice) ────────────────
+  oc.fillStyle = frz; oc.fillRect(0, 15, W, 2)
+  oc.fillStyle = lighten(frz, 0.28); oc.fillRect(0, 15, W, 1)
+  oc.fillStyle = darken(frz, 0.28)
+  for (let x = 3; x < W - 2; x += 6) {
+    oc.fillRect(x, 15, 3, 2)
+    oc.fillRect(x + 3, 16, 2, 1)
+  }
 
-  // ── Upper floor (rows 12–23) ──
-  spriteBrickWall(oc, 0, 12, W, 12, color)
-  spriteWindow(oc,  5, 14, 7, 8, dark)
-  spriteWindow(oc, 28, 14, 7, 8, dark)
+  // ── UPPER FLOOR rows 17–28 (painted stucco, 3 arched windows) ──
+  spriteBrickWall(oc, 0, 17, W, 12, wLit)
+  // Corner pilasters (lit left, shadow right)
+  oc.fillStyle = lighten(wLit, 0.24); oc.fillRect(0, 17, 4, 12)
+  oc.fillStyle = wShd; oc.fillRect(W - 4, 17, 4, 12)
+  // 3 arched windows with painted wooden shutters
+  for (const [wx, ww] of [[6, 9], [24, 10], [42, 9]]) {
+    spriteWindow(oc, wx, 19, ww, 9, wDark)
+    // Shutter panels (left and right of each window)
+    oc.fillStyle = shut
+    oc.fillRect(wx - 2, 19, 2, 9)
+    oc.fillRect(wx + ww, 19, 2, 9)
+    // Shutter slat lines
+    oc.fillStyle = darken(shut, 0.25)
+    for (let sy = 20; sy < 28; sy += 2) {
+      oc.fillRect(wx - 2, sy, 2, 1)
+      oc.fillRect(wx + ww, sy, 2, 1)
+    }
+  }
 
-  // ── Floor separator (rows 23–24) ──
-  oc.fillStyle = lighten(color, 0.10); oc.fillRect(0, 23, W, 1)
-  oc.fillStyle = wDk;                  oc.fillRect(0, 24, W, 1)
+  // ── BELT COURSE rows 29–30 (projecting stone band) ─────────
+  oc.fillStyle = lighten(sMid, 0.12); oc.fillRect(0, 29, W, 1)
+  oc.fillStyle = darken(sMid, 0.16);  oc.fillRect(0, 30, W, 1)
 
-  // ── Lower floor (rows 25–38) ──
-  spriteBrickWall(oc, 0, 25, W, 14, color)
-  spriteWindow(oc,  3, 27, 7, 8, dark)
-  spriteWindow(oc, 30, 27, 7, 8, dark)
-  spriteDoor(oc, 16, 25, 8, 13, frz, dark)
+  // ── LOWER FLOOR rows 31–52 (columns + grand arch + windows) ─
+  spriteBrickWall(oc, 0, 31, W, 22, wMid)
+  oc.fillStyle = wShd; oc.fillRect(W - 4, 31, 4, 22)
 
-  // ── Pilasters ──
-  oc.fillStyle = lighten(color, 0.22)
-  oc.fillRect(0, 12, 3, 32)
-  oc.fillStyle = wDp
-  oc.fillRect(W - 3, 12, 3, 32)
+  // ── Four Ionic columns engaged with the arch surround ───────
+  // cx = shaft left edge.  Capital 3 rows, shaft 15 rows, base 3 rows.
+  for (const [cx, lit] of [[2,true],[15,true],[41,false],[54,false]]) {
+    // Capital (flared top — Ionic volute suggestion)
+    oc.fillStyle = cCap;                oc.fillRect(cx - 1, 31, 7, 1)
+    oc.fillStyle = lit ? cLit : cShd;  oc.fillRect(cx - 1, 32, 7, 2)
+    // Shaft with highlight + shadow strips
+    oc.fillStyle = lit ? cLit : cShd;  oc.fillRect(cx, 34, 5, 15)
+    oc.fillStyle = 'rgba(255,255,255,0.18)'; oc.fillRect(cx, 34, 1, 15)
+    oc.fillStyle = 'rgba(0,0,0,0.22)';       oc.fillRect(cx + 4, 34, 1, 15)
+    // Attic base
+    oc.fillStyle = lit ? sLit : sMid;  oc.fillRect(cx - 1, 49, 7, 3)
+    oc.fillStyle = darken(sMid, 0.14); oc.fillRect(cx - 1, 51, 7, 1)
+  }
 
-  // ── Base (rows 39–43) ──
-  oc.fillStyle = lighten(base, 0.14); oc.fillRect(0, 39, W, 1)
-  spriteBrickWall(oc, 0, 40, W, 4, base)
+  // ── Grand triumphal arch entrance ───────────────────────────
+  // archX=18, archW=24 → opening 18–41, centre at x=30
+  const aX = 18, aW = 24, aTop = 32
 
-  // ── Hanging lantern ──
-  spriteLantern(oc, 19, 22)
+  // Arch surround (golden frame, 2px wider each side)
+  oc.fillStyle = lighten(frz, 0.10)
+  oc.fillRect(aX - 2, aTop - 1, aW + 4, 22)
+
+  // Pixel-art semicircular arch crown (staircase approximation, radius 12)
+  oc.fillStyle = wDark
+  for (const [sx, sy, sw] of [
+    [aX + 10, aTop,     4],   // apex
+    [aX +  7, aTop + 1, 10],
+    [aX +  4, aTop + 2, 16],
+    [aX +  2, aTop + 3, 20],
+    [aX +  1, aTop + 4, 22],
+    [aX,      aTop + 5, 24],  // full width — rect starts here
+  ]) oc.fillRect(sx, sy, sw, 1)
+
+  // Arch rectangular dark body (rows aTop+6 to 52)
+  oc.fillRect(aX, aTop + 6, aW, 52 - (aTop + 6) + 1)
+
+  // Keystone — gold wedge above arch crown
+  oc.fillStyle = gold;              oc.fillRect(aX + 9, aTop - 1, 6, 3)
+  oc.fillStyle = lighten(gold, 0.32); oc.fillRect(aX + 10, aTop - 1, 4, 1)
+
+  // Warm amber candlelight inside arch (three layered glows)
+  oc.fillStyle = ambr1; oc.fillRect(aX,     aTop + 6, aW,     46)
+  oc.fillStyle = ambr2; oc.fillRect(aX + 4, aTop + 9, aW - 8, 40)
+  oc.fillStyle = ambr3; oc.fillRect(aX + 8, aTop +13, aW -16, 30)
+
+  // Gold door-pull rings
+  oc.fillStyle = gold
+  oc.fillRect(aX + 4,      aTop + 16, 2, 2)
+  oc.fillRect(aX + aW - 6, aTop + 16, 2, 2)
+  oc.fillStyle = darken(gold, 0.22)
+  oc.fillRect(aX + 4,      aTop + 17, 2, 1)
+  oc.fillRect(aX + aW - 6, aTop + 17, 2, 1)
+
+  // ── Two flanking windows on lower floor ─────────────────────
+  // Positioned between outer and inner columns
+  for (const [wx, ww] of [[7, 7], [46, 7]]) {
+    spriteWindow(oc, wx, 37, ww, 10, wDark)
+    oc.fillStyle = shut
+    oc.fillRect(wx - 1, 37, 1, 10)
+    oc.fillRect(wx + ww, 37, 1, 10)
+    oc.fillStyle = darken(shut, 0.25)
+    for (let sy = 38; sy < 47; sy += 2) {
+      oc.fillRect(wx - 1, sy, 1, 1)
+      oc.fillRect(wx + ww, sy, 1, 1)
+    }
+  }
+
+  // ── STONE PLINTH rows 53–57 (rusticated base) ───────────────
+  oc.fillStyle = lighten(sLit, 0.20); oc.fillRect(0, 53, W, 1)
+  spriteBrickWall(oc, 0, 54, W, 5, sLit)
+  oc.fillStyle = sShd; oc.fillRect(W - 4, 54, 4, 5)
+
+  // ── WIDE STEPS rows 58–63 (3 steps, each 2px tall) ─────────
+  // Steps get slightly lighter toward bottom (stone catching light)
+  for (let s = 0; s < 3; s++) {
+    const sy = 58 + s * 2
+    oc.fillStyle = lighten(sMid, 0.12 - s * 0.06)
+    oc.fillRect(0, sy, W, 1)
+    oc.fillStyle = 'rgba(255,255,255,0.09)'
+    oc.fillRect(0, sy, W, 1)
+    oc.fillStyle = darken(sMid, 0.12 + s * 0.08)
+    oc.fillRect(0, sy + 1, W, 1)
+  }
 
   return off
 }
@@ -793,11 +910,12 @@ function drawBuilding2D(ctx, b, streetOffsetX, groundY, isNew, onFire, time) {
 
   const pixelSprite = getPixelSprite(id, color)
   if (pixelSprite) {
-    const sw = pixelSprite.width  * PIXEL
-    const sh = pixelSprite.height * PIXEL
-    ctx.drawImage(pixelSprite, x, groundY - sh, sw, sh)
-    if (isNew)  drawSparkle2D(ctx, x + sw / 2, groundY - sh)
-    if (onFire) drawFire2D(ctx, x + sw / 2, groundY - sh, sw, time)
+    const sw  = pixelSprite.width  * PIXEL
+    const sh  = pixelSprite.height * PIXEL
+    const ox  = Math.round((sw - bw) / 2)   // centre wider sprite on the tile
+    ctx.drawImage(pixelSprite, x - ox, groundY - sh, sw, sh)
+    if (isNew)  drawSparkle2D(ctx, x + bw / 2, groundY - sh)
+    if (onFire) drawFire2D(ctx, x + bw / 2, groundY - sh, sw, time)
     return
   }
 
