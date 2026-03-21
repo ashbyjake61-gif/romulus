@@ -398,49 +398,70 @@ function drawTree2D(ctx, tx, groundY, height, seed) {
   ctx.fill()
 }
 
-// Terraria-style blocky pixel bush — exactly 3 rounded lumps, solid square blocks
+// Dense forest bush — small 2px blocks, organic silhouette, deep-shadow interior
 function drawShrub2D(ctx, x, groundY, seed) {
-  const BS = 6  // block size in world px (6 screen px per block)
+  const BS    = 2   // 2 world-px blocks = 2 screen px each (fine, detailed)
+  const nCols = 44 + Math.floor(seed * 18)
+  const baseH = 12 + Math.floor(seed * 6)
 
-  // Fixed 3-lump height profile — valley dips between each lump create distinct bumps
-  // Seed scales the whole bush up/down slightly and shifts the valley depths
-  const scale  = 0.85 + seed * 0.35
-  const BASE   = [1, 2, 3, 4, 3, 2, 2, 3, 5, 4, 3, 2, 2, 3, 4, 3, 1]
-  const nCols  = BASE.length
-  const heights = BASE.map((h, c) => {
-    const jitter = (tileNoise(c * 2.9 + seed * 11, seed * 7.3) - 0.5) * 0.6
-    return Math.max(1, Math.round((h + jitter) * scale))
-  })
+  // Organic height profile: dome envelope + layered bumps + per-column noise
+  const heights = []
+  for (let c = 0; c < nCols; c++) {
+    const cx = c / (nCols - 1)
+    const dome  = baseH * Math.pow(Math.max(0, 1 - (2 * cx - 1) ** 2), 0.52)
+    const bumps =
+      Math.sin(cx * Math.PI * 5  + seed * 3.1) * 2.2 +
+      Math.sin(cx * Math.PI * 11 + seed * 7.3) * 1.4 +
+      Math.sin(cx * Math.PI * 23 + seed * 13.1) * 0.8 +
+      Math.sin(cx * Math.PI * 41 + seed * 19.7) * 0.4
+    const noise = (tileNoise(c * 1.9 + seed * 23, c * 3.3 + seed * 8) - 0.5) * 2.4
+    heights.push(Math.max(2, Math.round(dome + bumps + noise + 1)))
+  }
 
   const maxH   = Math.max(...heights)
-  const startX = x - (nCols * BS) / 2
+  const startX = Math.round(x - nCols * BS / 2)
 
-  // 5-colour palette sampled from reference image
-  const C_DARK  = '#1c4808'   // base / shadow
-  const C_MID   = '#2d600e'   // lower body
-  const C_UPPER = '#3d7c1a'   // upper body
-  const C_TOP   = '#4e9c24'   // top of lumps
-  const C_HI    = '#5cb82c'   // highlight (upper-left of each lump peak)
+  // 10-colour ramp: index 0 = deep shadow, 9 = sunlit tip
+  const palette = [
+    '#0e2406', '#182e0a', '#1e3c10', '#28500e',
+    '#346418', '#3e7c1e', '#4a9224', '#56a82c', '#64bc32', '#74d03a',
+  ]
 
   for (let c = 0; c < nCols; c++) {
     const h  = heights[c]
     const bx = startX + c * BS
-    const isLeftSide = c < nCols * 0.45   // left half gets highlight
+    // How far from the side edge: 0 = outermost column, 1+ = well inside
+    const edgeFrac = Math.min(c, nCols - 1 - c) / (nCols * 0.10)
 
     for (let row = 0; row < h; row++) {
-      const by     = groundY - (row + 1) * BS
-      const isTop  = row === h - 1
-      const isBase = row === 0
-      const frac   = row / Math.max(h - 1, 1)   // 0 = base, 1 = top
+      const by      = groundY - (row + 1) * BS
+      const fromTop = h - 1 - row   // 0 = top row
+      const n  = tileNoise(c * 2.7 + row * 5.3 + seed * 43, row * 4.1 + c * 1.9)
+      const n2 = tileNoise(c * 6.1 + seed * 11, row * 8.7 + c * 2.3)
 
-      let color
-      if (isBase || c === 0 || c === nCols - 1) color = C_DARK
-      else if (isTop && isLeftSide)              color = C_HI
-      else if (isTop)                            color = C_TOP
-      else if (frac > 0.55)                      color = C_UPPER
-      else                                       color = C_MID
+      let idx
+      if (fromTop === 0) {
+        // Leaf tips: scattered bright/highlight
+        idx = n > 0.60 ? 9 : n > 0.28 ? 8 : 7
+      } else if (fromTop === 1) {
+        idx = n > 0.55 ? 8 : n > 0.25 ? 7 : 6
+      } else if (fromTop === 2) {
+        idx = n2 > 0.65 ? 7 : 6
+      } else if (fromTop <= 4) {
+        // Upper foliage — scattered light patches
+        idx = n > 0.70 ? 6 : n > 0.40 ? 5 : 4
+      } else {
+        // Interior depth: darker the further from the surface
+        const depthFrac = fromTop / maxH
+        idx = Math.round((1 - depthFrac) * 4 + n * 1.5 - 0.5)
+        // Woody stem colour at very base
+        if (row === 0) idx = 0
+      }
 
-      ctx.fillStyle = color
+      // Side edges always darker (dense shadow at the margins)
+      if (edgeFrac < 0.6) idx = Math.min(idx, 2)
+
+      ctx.fillStyle = palette[Math.max(0, Math.min(9, idx))]
       ctx.fillRect(bx, by, BS, BS)
     }
   }
@@ -813,6 +834,11 @@ function drawBuilding2D(ctx, b, streetOffsetX, groundY, isNew, onFire, time) {
   if (onFire) drawFire2D(ctx, x + bw / 2, y, bw, time)
 }
 
+// ── Building rise animation ───────────────────────────────────
+const seenBuildings    = new Set()
+const buildingAnimStart = new Map()
+const RISE_DURATION    = 1.1   // seconds
+
 // ── Citizen system ────────────────────────────────────────────
 const CITIZEN_COUNT = 6
 const citizenList   = []
@@ -1001,12 +1027,34 @@ export function renderCity(canvas, buildings, newBuildingId = null, pan = { x: 0
 
   const sorted = [...buildings].sort((a, b) => a.row !== b.row ? a.row - b.row : a.col - b.col)
   for (const b of sorted) {
-    drawBuilding2D(
-      oc, b, streetOffsetX, groundY,
-      b.id === newBuildingId,
-      fires.some(f => f.col === b.col && f.row === b.row),
-      time
-    )
+    const bkey    = `${b.id}_${b.col}`
+    const isOnFire = fires.some(f => f.col === b.col && f.row === b.row)
+
+    // Register first appearance
+    if (!seenBuildings.has(bkey)) {
+      seenBuildings.add(bkey)
+      buildingAnimStart.set(bkey, time)
+    }
+
+    const elapsed = time - (buildingAnimStart.get(bkey) ?? time)
+    const rising  = elapsed < RISE_DURATION
+
+    if (rising) {
+      const t     = elapsed / RISE_DURATION
+      const ease  = 1 - (1 - t) ** 3           // cubic ease-out
+      const bh    = BLDG_BASE + (b.floors || 1) * FLOOR_H
+      const animY = Math.round(bh * (1 - ease)) // starts below ground, falls to 0
+      oc.save()
+      // Clip so building doesn't peek below the ground line while rising
+      oc.beginPath()
+      oc.rect(-1e5, -1e5, 2e5, 1e5 + groundY)
+      oc.clip()
+      oc.translate(0, animY)
+      drawBuilding2D(oc, b, streetOffsetX, groundY, b.id === newBuildingId, isOnFire, time)
+      oc.restore()
+    } else {
+      drawBuilding2D(oc, b, streetOffsetX, groundY, b.id === newBuildingId, isOnFire, time)
+    }
   }
 
   initCitizens()
